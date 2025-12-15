@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: StationScreenClient
-	Версія: 1.2.4
+	Версія: 1.2.5
     Розміщення: StarterGui/StationGui/StationScreenClient
 
     Призначення:
@@ -37,7 +37,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("StationScreenClient", "1.2.4")
+local log = Logger.new("StationScreenClient", "1.2.5")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -76,17 +76,87 @@ end
 -- UI elements
 ----------------------------------------------------------------
 
-local title = waitForDescendant(gui, "Title", 10)
-local subtitle = waitForDescendant(gui, "Subtitle", 10)
-local btnGoLocation = waitForDescendant(gui, "GoLocationButton", 10)
-local btnExit = waitForDescendant(gui, "ExitGameButton", 10)
+-- Function: ensureMinimalStationUi
+-- Призначення:
+--   Створює мінімальний набір UI-елементів для StationScreen, якщо вони відсутні в ассетах.
+-- Вхідні параметри:
+--   screenGui: ScreenGui
+-- Вихід:
+--   (TextLabel, TextLabel, TextButton, TextButton)
+-- Хто використовує:
+--   StationScreenClient (Init)
+local function ensureMinimalStationUi(screenGui: ScreenGui)
+	local root = screenGui:FindFirstChild("Root")
+	if not root then
+		root = Instance.new("Frame")
+		root.Name = "Root"
+		root.BackgroundTransparency = 1
+		root.Size = UDim2.fromScale(1, 1)
+		root.Parent = screenGui
+	end
+
+	local function ensureTextLabel(name: string)
+		local existing = screenGui:FindFirstChild(name, true)
+		if existing and existing:IsA("TextLabel") then
+			return existing
+		end
+
+		local label = Instance.new("TextLabel")
+		label.Name = name
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.fromOffset(300, 40)
+		label.AnchorPoint = Vector2.new(0.5, 0)
+		label.Position = UDim2.fromScale(0.5, 0)
+		label.Text = name
+		label.Parent = root
+		return label
+	end
+
+	local function ensureTextButton(name: string, text: string)
+		local existing = screenGui:FindFirstChild(name, true)
+		if existing and existing:IsA("TextButton") then
+			return existing
+		end
+
+		local button = Instance.new("TextButton")
+		button.Name = name
+		button.Size = UDim2.fromOffset(240, 50)
+		button.AnchorPoint = Vector2.new(0.5, 0)
+		button.Position = UDim2.fromScale(0.5, 0)
+		button.Text = text
+		button.Parent = root
+		return button
+	end
+
+	local title = ensureTextLabel("Title")
+	local subtitle = ensureTextLabel("Subtitle")
+	local goLocation = ensureTextButton("GoLocationButton", "Go Location")
+	local exitButton = ensureTextButton("ExitGameButton", "Exit")
+
+	local list = root:FindFirstChildOfClass("UIListLayout")
+	if not list then
+		list = Instance.new("UIListLayout")
+		list.FillDirection = Enum.FillDirection.Vertical
+		list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		list.SortOrder = Enum.SortOrder.LayoutOrder
+		list.Padding = UDim.new(0, 10)
+		list.Parent = root
+	end
+
+	return title, subtitle, goLocation, exitButton
+end
+
+local title = waitForDescendant(gui, "Title", 1)
+local subtitle = waitForDescendant(gui, "Subtitle", 1)
+local btnGoLocation = waitForDescendant(gui, "GoLocationButton", 1)
+local btnExit = waitForDescendant(gui, "ExitGameButton", 1)
 
 if not (title and subtitle and btnGoLocation and btnExit) then
-	log:Error(
+	log:Warn(
 		"Init",
-		"Station UI elements missing (check names: Title/Subtitle/GoLocationButton/ExitGameButton)"
+		"Station UI elements missing in assets; creating minimal UI (names: Title/Subtitle/GoLocationButton/ExitGameButton)"
 	)
-	return
+	title, subtitle, btnGoLocation, btnExit = ensureMinimalStationUi(gui)
 end
 
 local titleLabel = title :: any
@@ -189,5 +259,5 @@ end
 btnExitButton.MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.2.4
+-- End of script: StationScreenClient v1.2.5
 ----------------------------------------------------------------

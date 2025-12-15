@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-  Версія: 1.2.5
+  Версія: 1.2.6
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.5")
+local log = Logger.new("JoinScreenClient", "1.2.6")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -83,17 +83,89 @@ end
 -- UI elements
 ----------------------------------------------------------------
 
-local lblPlayerName = waitForDescendant(gui, "PlayerName", 10)
-local lblPlayerStatus = waitForDescendant(gui, "PlayerStatus", 10)
-local lblGameStatus = waitForDescendant(gui, "GameStatus", 10)
-local btnJoinGame = waitForDescendant(gui, "JoinGameButton", 10)
+-- Function: ensureMinimalJoinUi
+-- Призначення:
+--   Створює мінімальний набір UI-елементів для JoinScreen, якщо вони відсутні в ассетах.
+--   Це потрібно, бо репозиторій може не містити rbxmx/UI, а скрипт не повинен зависати на очікуванні.
+-- Вхідні параметри:
+--   screenGui: ScreenGui
+-- Вихід:
+--   (TextLabel, TextLabel, TextLabel, TextButton)
+-- Хто використовує:
+--   JoinScreenClient (Init)
+local function ensureMinimalJoinUi(screenGui: ScreenGui)
+  local root = screenGui:FindFirstChild("Root")
+  if not root then
+    root = Instance.new("Frame")
+    root.Name = "Root"
+    root.BackgroundTransparency = 1
+    root.Size = UDim2.fromScale(1, 1)
+    root.Parent = screenGui
+  end
+
+  local function ensureTextLabel(name: string)
+    local existing = screenGui:FindFirstChild(name, true)
+    if existing and existing:IsA("TextLabel") then
+      return existing
+    end
+
+    local label = Instance.new("TextLabel")
+    label.Name = name
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.fromOffset(300, 40)
+    label.AnchorPoint = Vector2.new(0.5, 0)
+    label.Position = UDim2.fromScale(0.5, 0)
+    label.Text = name
+    label.Parent = root
+    return label
+  end
+
+  local function ensureTextButton(name: string)
+    local existing = screenGui:FindFirstChild(name, true)
+    if existing and existing:IsA("TextButton") then
+      return existing
+    end
+
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.fromOffset(240, 50)
+    button.AnchorPoint = Vector2.new(0.5, 0)
+    button.Position = UDim2.fromScale(0.5, 0)
+    button.Text = "Join Game"
+    button.Parent = root
+    return button
+  end
+
+  local playerName = ensureTextLabel("PlayerName")
+  local playerStatus = ensureTextLabel("PlayerStatus")
+  local gameStatus = ensureTextLabel("GameStatus")
+  local joinButton = ensureTextButton("JoinGameButton")
+
+  -- Minimal layout (vertical stack)
+  local list = root:FindFirstChildOfClass("UIListLayout")
+  if not list then
+    list = Instance.new("UIListLayout")
+    list.FillDirection = Enum.FillDirection.Vertical
+    list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+    list.Padding = UDim.new(0, 10)
+    list.Parent = root
+  end
+
+  return playerName, playerStatus, gameStatus, joinButton
+end
+
+local lblPlayerName = waitForDescendant(gui, "PlayerName", 1)
+local lblPlayerStatus = waitForDescendant(gui, "PlayerStatus", 1)
+local lblGameStatus = waitForDescendant(gui, "GameStatus", 1)
+local btnJoinGame = waitForDescendant(gui, "JoinGameButton", 1)
 
 if not (lblPlayerName and lblPlayerStatus and lblGameStatus and btnJoinGame) then
-  log:Error(
+  log:Warn(
     "Init",
-    "Join UI elements missing (check names: PlayerName/PlayerStatus/GameStatus/JoinGameButton)"
+    "Join UI elements missing in assets; creating minimal UI (names: PlayerName/PlayerStatus/GameStatus/JoinGameButton)"
   )
-  return
+  lblPlayerName, lblPlayerStatus, lblGameStatus, btnJoinGame = ensureMinimalJoinUi(gui)
 end
 
 local lblPlayerNameLabel = lblPlayerName :: any
@@ -264,4 +336,5 @@ onModeChanged()
 
 ----------------------------------------------------------------
 -- End of script: JoinScreenClient v1.2.5
+-- End of script: JoinScreenClient v1.2.6
 ----------------------------------------------------------------

@@ -1,7 +1,7 @@
 --[[
         Тип: LocalScript
         Назва: GuiController
-    Версія: 1.2.3
+        Версія: 1.2.4
         Розміщення: StarterPlayer/StarterPlayerScripts/GuiController
 
         Призначення:
@@ -22,7 +22,7 @@ local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiController", "1.2.3")
+local log = Logger.new("GuiController", "1.2.4")
 
 log:Info("Init", "GuiController starting")
 
@@ -105,20 +105,20 @@ local function updateGui()
     if currentMode == "Join" then
         if joinGui then
             joinGui.Enabled = true
-            log:Info("JoinGameGui enabled")
+            log:Info("Update", "JoinGameGui enabled")
         end
         if stationGui then
             stationGui.Enabled = false
-            log:Info("StationGui disabled")
+            log:Info("Update", "StationGui disabled")
         end
     elseif currentMode == "Station" then
         if joinGui then
             joinGui.Enabled = false
-            log:Info("JoinGameGui disabled")
+            log:Info("Update", "JoinGameGui disabled")
         end
         if stationGui then
             stationGui.Enabled = true
-            log:Info("StationGui enabled")
+            log:Info("Update", "StationGui enabled")
         end
     else
         log:Warn("Update", "Unknown mode=%s", tostring(currentMode))
@@ -144,6 +144,6 @@ updateGui()
 
 log:Info("Done", "GUI controller started")
 
--- End of script: GuiController v1.2.3
+-- End of script: GuiController v1.2.4
 
 return "GuiController started"
