@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: DoorTest
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/DoorTest
 
     Призначення:
@@ -32,7 +32,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 ----------------------------------------------------------------
 
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("DoorTest", "1.1.0")
+local log = Logger.new("DoorTest", "1.2.0")
 
 -- Configuration
 local DOOR_OPEN_DISTANCE = 8

@@ -1,54 +1,80 @@
--- GUI Controller - керує видимістю GUI на основі атрибутів
+--[[
+        Тип: LocalScript
+        Назва: GuiController
+        Версія: 1.2.0
+        Розміщення: StarterPlayer/StarterPlayerScripts/GuiController
+
+        Призначення:
+            Керує видимістю Join/Station GUI в залежності від `CurrentMode` атрибуту гравця.
+
+        Загальна логіка:
+            - Слухає `AttributeChanged` для `CurrentMode`
+            - Включає/вимикає відповідні GUI
+
+        Архітектурні правила:
+            - Не робить spawn або бізнес-логіку
+            - Логує лише ключові зміни стану
+--]]
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-print("[GuiController] Starting GUI controller...")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Logger = require(ReplicatedStorage.Shared.Logger)
+local log = Logger.new("GuiController", "1.2.0")
+
+log:Info("Init", "GuiController starting")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
-print("[GuiController] PlayerGui found")
+log:Info("PlayerGui found")
 
 -- Чекаємо на GUI
 local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
 local stationGui = playerGui:WaitForChild("StationGui", 5)
 
 if joinGui then
-    print("[GuiController] JoinGameGui found")
+    log:Info("JoinGameGui found")
 else
-    print("[GuiController] JoinGameGui NOT found after 10 seconds!")
+    log:Warn("JoinGameGui NOT found after 10 seconds!")
 end
 
 if stationGui then
-    print("[GuiController] StationGui found")
+    log:Info("StationGui found")
 else
-    print("[GuiController] StationGui NOT found after 5 seconds!")
+    log:Warn("StationGui NOT found after 5 seconds!")
 end
 
 -- Функція оновлення GUI
+-- Function: updateGui
+-- Призначення:
+-- Оновлює видимість GUI на основі атрибуту `CurrentMode` гравця
+-- Вхідні параметри: None
+-- Вихід / ефект: змінює `Enabled` на `JoinGameGui` / `StationGui`
 local function updateGui()
     local currentMode = player:GetAttribute("CurrentMode")
-    print("[GuiController] Updating GUI for mode:", currentMode)
+    log:Info("Update", "Updating GUI for mode=%s", tostring(currentMode))
     
     if currentMode == "Join" then
         if joinGui then
             joinGui.Enabled = true
-            print("[GuiController] JoinGameGui enabled")
+            log:Info("JoinGameGui enabled")
         end
         if stationGui then
             stationGui.Enabled = false
-            print("[GuiController] StationGui disabled")
+            log:Info("StationGui disabled")
         end
     elseif currentMode == "Station" then
         if joinGui then
             joinGui.Enabled = false
-            print("[GuiController] JoinGameGui disabled")
+            log:Info("JoinGameGui disabled")
         end
         if stationGui then
             stationGui.Enabled = true
-            print("[GuiController] StationGui enabled")
+            log:Info("StationGui enabled")
         end
     else
-        print("[GuiController] Unknown mode:", currentMode)
+        log:Warn("Unknown mode: " .. tostring(currentMode))
     end
 end
 
@@ -69,6 +95,8 @@ end)
 -- Початкове оновлення
 updateGui()
 
-print("[GuiController] GUI controller started")
+log:Info("Done", "GUI controller started")
+
+-- End of script: GuiController v1.2.0
 
 return "GuiController started"

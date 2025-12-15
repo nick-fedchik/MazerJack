@@ -1,9 +1,27 @@
+--[[
+        Тип: LocalScript
+        Назва: MovementDebug
+        Версія: 1.2.0
+        Розміщення: StarterPlayer/StarterPlayerScripts/MovementDebug
+
+        Призначення:
+            Відображає просту відлагоджувальну інформацію про рух гравця (humanoid, input).
+
+        Загальна логіка:
+            - Оновлює текст кожен кадр, показуючи стан humanoid та натиснуті клавіші
+            - Перемикається натисканням F1
+--]]
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local isDebugging = true
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Logger = require(ReplicatedStorage.Shared.Logger)
+local log = Logger.new("MovementDebug", "1.2.0")
 
 -- Create debug GUI
 local screenGui = Instance.new("ScreenGui")
@@ -28,6 +46,11 @@ label.Font = Enum.Font.Code
 label.TextSize = 12
 label.Parent = frame
 
+-- Function: updateDebugInfo
+-- Призначення:
+-- Збирає та показує відлагоджувальну інформацію про рух та введення
+-- Вхідні параметри: None
+-- Вихід / ефект: оновлює `label.Text`
 local function updateDebugInfo()
     if not isDebugging then return end
     
@@ -75,8 +98,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.F1 then
         isDebugging = not isDebugging
         screenGui.Enabled = isDebugging
-        print("Movement debug:", isDebugging and "ON" or "OFF")
+        log:Info("Toggle", "Movement debug=%s", (isDebugging and "ON" or "OFF"))
     end
 end)
 
-print("Movement debug script loaded. Press F1 to toggle debug GUI.")
+log:Info("Done", "Movement debug script loaded")
+
+-- End of script: MovementDebug v1.2.0
+
+return "MovementDebug loaded"

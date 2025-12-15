@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: MainServer
-    Версія: 1.1.1
+    Версія: 1.2.0
     Розміщення: ServerScriptService/MainServer
 
     Призначення:
@@ -45,7 +45,7 @@ local Enums  = require(ReplicatedStorage.Shared.Enums)
 -- Logger
 ----------------------------------------------------------------
 
-local log = Logger.new("MainServer", "1.1.1")
+local log = Logger.new("MainServer", "1.2.0")
 
 ----------------------------------------------------------------
 -- Services construction

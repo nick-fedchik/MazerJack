@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: PlayerSpawnService
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/Services/PlayerSpawnService
 
     Призначення:
@@ -38,7 +38,7 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local PlayerSpawnService = {}
 PlayerSpawnService.__index = PlayerSpawnService
 
-local log = Logger.new("PlayerSpawnService", "1.1.0")
+local log = Logger.new("PlayerSpawnService", "1.2.0")
 
 local ATTR_SPAWN_ENABLED = "MJ_SpawnEnabled"
 

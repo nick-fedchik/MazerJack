@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: StateJoin
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/StateMachine/StateJoin
 
     Призначення:
@@ -33,7 +33,7 @@ local Logger = require(ReplicatedStorage.Shared.Logger)
 local StateJoin = {}
 StateJoin.__index = StateJoin
 
-local log = Logger.new("StateJoin", "1.1.0")
+local log = Logger.new("StateJoin", "1.2.0")
 
 ----------------------------------------------------------------
 -- Construction

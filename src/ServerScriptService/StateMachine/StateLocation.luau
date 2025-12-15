@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: StateLocation
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/StateMachine/StateLocation
 
     Призначення:

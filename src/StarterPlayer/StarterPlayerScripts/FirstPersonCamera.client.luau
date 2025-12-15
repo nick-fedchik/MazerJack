@@ -75,4 +75,7 @@ setupFirstPersonCamera()
 -- Вимикаємо стандартну камеру Roblox
 StarterPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
 
-print("First Person Camera Controller initialized")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Logger = require(ReplicatedStorage.Shared.Logger)
+local log = Logger.new("FirstPersonCamera", "1.2.0")
+log:Info("Init")

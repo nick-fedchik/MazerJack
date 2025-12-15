@@ -1,24 +1,48 @@
--- GUI Monitor - перевіряє стан GUI при вході гравця
+--[[
+        Тип: LocalScript
+        Назва: GuiMonitor
+        Версія: 1.2.0
+        Розміщення: StarterPlayer/StarterPlayerScripts/GuiMonitor
+
+        Призначення:
+            Моніторить наявність та стан GUI елементів при вході гравця для швидкої діагностики.
+
+        Загальна логіка:
+            - Очікує `PlayerGui` і перевіряє ключові GUI (JoinGameGui, StationGui)
+            - Логує статус та наявність елементів
+
+        Взаємодія / контракти:
+            - Не взаємодіє через Remotes; лише читає `PlayerGui`
+
+        Архітектурні правила:
+            - Використовує тільки `Logger` для логів
+            - Не змінює state гри
+--]]
+
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
 
-print("[GuiMonitor] Starting GUI monitoring...")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Logger = require(ReplicatedStorage.Shared.Logger)
+local log = Logger.new("GuiMonitor", "1.2.0")
+
+log:Info("Init", "GuiMonitor starting")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
-print("[GuiMonitor] PlayerGui found")
+log:Info("PlayerGui found")
 
 -- Перевіряємо JoinGameGui
 local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
 if joinGui then
-    print("[GuiMonitor] JoinGameGui found in PlayerGui")
-    print("[GuiMonitor] JoinGameGui.Enabled:", joinGui.Enabled)
+    log:Info("JoinGameGui found in PlayerGui")
+    log:Info("JoinGameGui.Enabled: " .. tostring(joinGui.Enabled))
     
     -- Перевіряємо елементи
     local root = joinGui:FindFirstChild("Root")
     if root then
-        print("[GuiMonitor] Root frame found")
+        log:Info("Root frame found")
         
         local gameTitle = root:FindFirstChild("GameTitle")
         local gameVersion = root:FindFirstChild("GameVersion")
@@ -26,50 +50,52 @@ if joinGui then
         local loadingIndicator = root:FindFirstChild("LoadingIndicator")
         local joinButton = root:FindFirstChild("JoinGameButton")
         
-        print("[GuiMonitor] GameTitle:", gameTitle and "found" or "NOT FOUND")
-        print("[GuiMonitor] GameVersion:", gameVersion and "found" or "NOT FOUND")
-        print("[GuiMonitor] PlayerContainer:", playerContainer and "found" or "NOT FOUND")
-        print("[GuiMonitor] LoadingIndicator:", loadingIndicator and "found" or "NOT FOUND")
-        print("[GuiMonitor] JoinGameButton:", joinButton and "found" or "NOT FOUND")
+        log:Info("GameTitle: " .. tostring(gameTitle and "found" or "NOT FOUND"))
+        log:Info("GameVersion: " .. tostring(gameVersion and "found" or "NOT FOUND"))
+        log:Info("PlayerContainer: " .. tostring(playerContainer and "found" or "NOT FOUND"))
+        log:Info("LoadingIndicator: " .. tostring(loadingIndicator and "found" or "NOT FOUND"))
+        log:Info("JoinGameButton: " .. tostring(joinButton and "found" or "NOT FOUND"))
         
         if playerContainer then
             local avatarImage = playerContainer:FindFirstChild("AvatarImage")
             local playerName = playerContainer:FindFirstChild("PlayerName")
             local playerStatus = playerContainer:FindFirstChild("PlayerStatus")
             
-            print("[GuiMonitor] AvatarImage:", avatarImage and "found" or "NOT FOUND")
-            print("[GuiMonitor] PlayerName:", playerName and "found" or "NOT FOUND")
-            print("[GuiMonitor] PlayerStatus:", playerStatus and "found" or "NOT FOUND")
+            log:Info("AvatarImage: " .. tostring(avatarImage and "found" or "NOT FOUND"))
+            log:Info("PlayerName: " .. tostring(playerName and "found" or "NOT FOUND"))
+            log:Info("PlayerStatus: " .. tostring(playerStatus and "found" or "NOT FOUND"))
         end
         
         if gameTitle and gameVersion and playerContainer and loadingIndicator and joinButton then
-            print("[GuiMonitor] ✅ All main GUI elements found!")
+            log:Info("✅ All main GUI elements found!")
             
             -- Перевіряємо видимість
-            print("[GuiMonitor] GameTitle.Visible:", gameTitle.Visible)
-            print("[GuiMonitor] GameVersion.Visible:", gameVersion.Visible)
-            print("[GuiMonitor] PlayerContainer.Visible:", playerContainer.Visible)
-            print("[GuiMonitor] LoadingIndicator.Visible:", loadingIndicator.Visible)
-            print("[GuiMonitor] JoinGameButton.Visible:", joinButton.Visible)
+            log:Info("GameTitle.Visible: " .. tostring(gameTitle.Visible))
+            log:Info("GameVersion.Visible: " .. tostring(gameVersion.Visible))
+            log:Info("PlayerContainer.Visible: " .. tostring(playerContainer.Visible))
+            log:Info("LoadingIndicator.Visible: " .. tostring(loadingIndicator.Visible))
+            log:Info("JoinGameButton.Visible: " .. tostring(joinButton.Visible))
         else
-            print("[GuiMonitor] ❌ Some GUI elements missing!")
+            log:Warn("Some GUI elements missing!")
         end
     else
-        print("[GuiMonitor] ❌ Root frame not found!")
+        log:Warn("Root frame not found!")
     end
 else
-    print("[GuiMonitor] ❌ JoinGameGui not found in PlayerGui after 10 seconds!")
+    log:Warn("JoinGameGui not found in PlayerGui after 10 seconds!")
 end
 
 -- Перевіряємо StationGui
 local stationGui = playerGui:WaitForChild("StationGui", 5)
 if stationGui then
-    print("[GuiMonitor] StationGui found in PlayerGui")
-    print("[GuiMonitor] StationGui.Enabled:", stationGui.Enabled)
+    log:Info("StationGui found in PlayerGui")
+    log:Info("StationGui.Enabled: " .. tostring(stationGui.Enabled))
 else
-    print("[GuiMonitor] StationGui not found in PlayerGui (expected to be disabled initially)")
+    log:Info("StationGui not found in PlayerGui (expected to be disabled initially)")
 end
 
-print("[GuiMonitor] GUI monitoring completed")
+log:Info("Done", "GUI monitoring completed")
+
+-- End of script: GuiMonitor v1.2.0
 
 return "GuiMonitor finished"

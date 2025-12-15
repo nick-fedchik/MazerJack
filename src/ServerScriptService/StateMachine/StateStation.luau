@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: StateStation
-    Версія: 1.1.3
+	Версія: 1.2.0
     Розміщення: ServerScriptService/StateMachine/StateStation
 
     Призначення:
@@ -52,7 +52,7 @@ local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 local StateStation = {}
 StateStation.__index = StateStation
 
-local log = Logger.new("StateStation", "1.1.3")
+local log = Logger.new("StateStation", "1.2.0")
 
 ----------------------------------------------------------------
 -- Constructor: new
