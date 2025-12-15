@@ -1,7 +1,7 @@
 --[[
         Тип: LocalScript
         Назва: GuiController
-        Версія: 1.2.2
+    Версія: 1.2.3
         Розміщення: StarterPlayer/StarterPlayerScripts/GuiController
 
         Призначення:
@@ -17,11 +17,12 @@
 --]]
 
 local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiController", "1.2.2")
+local log = Logger.new("GuiController", "1.2.3")
 
 log:Info("Init", "GuiController starting")
 
@@ -29,9 +30,49 @@ log:Info("Init", "GuiController starting")
 local playerGui = player:WaitForChild("PlayerGui")
 log:Info("Resolve", "PlayerGui found")
 
+-- Function: ensureGui
+-- Призначення:
+--   Гарантує наявність ScreenGui у PlayerGui навіть якщо Roblox не скопіював StarterGui
+--   (наприклад коли Players.CharacterAutoLoads=false і персонаж ще не створений).
+-- Вхідні параметри:
+--   guiName: string
+--   timeoutSeconds: number? (default 2)
+-- Вихід:
+--   ScreenGui | nil
+-- Хто використовує:
+--   GuiController (bootstrap Join/Station GUI)
+local function ensureGui(guiName: string, timeoutSeconds: number?)
+    local timeout = timeoutSeconds or 2
+
+    local existing = playerGui:FindFirstChild(guiName)
+    if existing then
+        return existing :: any
+    end
+
+    local template = StarterGui:FindFirstChild(guiName)
+    if template then
+        local cloned = template:Clone()
+        cloned.Parent = playerGui
+        log:Info("Resolve", "%s cloned from StarterGui into PlayerGui", guiName)
+    else
+        log:Warn("Resolve", "%s template not found in StarterGui", guiName)
+    end
+
+    local started = os.clock()
+    while (os.clock() - started) < timeout do
+        local found = playerGui:FindFirstChild(guiName)
+        if found then
+            return found :: any
+        end
+        task.wait(0.05)
+    end
+
+    return nil
+end
+
 -- Чекаємо на GUI
-local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
-local stationGui = playerGui:WaitForChild("StationGui", 5)
+local joinGui = ensureGui("JoinGameGui", 2) or playerGui:WaitForChild("JoinGameGui", 10)
+local stationGui = ensureGui("StationGui", 2) or playerGui:WaitForChild("StationGui", 5)
 
 if joinGui then
     log:Info("Resolve", "JoinGameGui found")
@@ -103,6 +144,6 @@ updateGui()
 
 log:Info("Done", "GUI controller started")
 
--- End of script: GuiController v1.2.2
+-- End of script: GuiController v1.2.3
 
 return "GuiController started"

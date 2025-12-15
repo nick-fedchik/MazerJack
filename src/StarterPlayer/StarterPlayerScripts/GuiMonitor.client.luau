@@ -1,7 +1,7 @@
 --[[
         Тип: LocalScript
         Назва: GuiMonitor
-        Версія: 1.2.1
+    Версія: 1.2.2
         Розміщення: StarterPlayer/StarterPlayerScripts/GuiMonitor
 
         Призначення:
@@ -25,7 +25,7 @@ local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiMonitor", "1.2.1")
+local log = Logger.new("GuiMonitor", "1.2.2")
 
 log:Info("Init", "GuiMonitor starting")
 
@@ -33,8 +33,48 @@ log:Info("Init", "GuiMonitor starting")
 local playerGui = player:WaitForChild("PlayerGui")
 log:Info("Resolve", "PlayerGui found")
 
+-- Function: ensureGui
+-- Призначення:
+--   Підстраховка: якщо StarterGui не скопіював ScreenGui у PlayerGui (наприклад без персонажа),
+--   пробує клонувати шаблон з StarterGui.
+-- Вхідні параметри:
+--   guiName: string
+--   timeoutSeconds: number? (default 2)
+-- Вихід:
+--   ScreenGui | nil
+-- Хто використовує:
+--   GuiMonitor (діагностика GUI)
+local function ensureGui(guiName: string, timeoutSeconds: number?)
+    local timeout = timeoutSeconds or 2
+
+    local existing = playerGui:FindFirstChild(guiName)
+    if existing then
+        return existing :: any
+    end
+
+    local template = StarterGui:FindFirstChild(guiName)
+    if template then
+        local cloned = template:Clone()
+        cloned.Parent = playerGui
+        log:Info("Resolve", "%s cloned from StarterGui into PlayerGui", guiName)
+    else
+        log:Warn("Resolve", "%s template not found in StarterGui", guiName)
+    end
+
+    local started = os.clock()
+    while (os.clock() - started) < timeout do
+        local found = playerGui:FindFirstChild(guiName)
+        if found then
+            return found :: any
+        end
+        task.wait(0.05)
+    end
+
+    return nil
+end
+
 -- Перевіряємо JoinGameGui
-local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
+local joinGui = ensureGui("JoinGameGui", 2) or playerGui:WaitForChild("JoinGameGui", 10)
 if joinGui then
     log:Info("Resolve", "JoinGameGui found Enabled=%s", tostring(joinGui.Enabled))
 
@@ -63,7 +103,7 @@ else
 end
 
 -- Перевіряємо StationGui
-local stationGui = playerGui:WaitForChild("StationGui", 5)
+local stationGui = ensureGui("StationGui", 2) or playerGui:WaitForChild("StationGui", 5)
 if stationGui then
     log:Info("Resolve", "StationGui found Enabled=%s", tostring(stationGui.Enabled))
 else
@@ -73,5 +113,6 @@ end
 log:Info("Done", "GUI monitoring completed")
 
 -- End of script: GuiMonitor v1.2.1
+-- End of script: GuiMonitor v1.2.2
 
 return "GuiMonitor finished"
