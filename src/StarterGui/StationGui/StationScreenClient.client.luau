@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: StationScreenClient
-	Версія: 1.2.0
+	Версія: 1.2.1
     Розміщення: StarterGui/StationGui/StationScreenClient
 
     Призначення:
@@ -37,7 +37,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("StationScreenClient", "1.2.0")
+local log = Logger.new("StationScreenClient", "1.2.1")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -160,5 +160,5 @@ end
 btnExit.MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.2.0
+-- End of script: StationScreenClient v1.2.1
 ----------------------------------------------------------------

@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: MainServer
-    Версія: 1.2.0
+  Версія: 1.2.1
     Розміщення: ServerScriptService/MainServer
 
     Призначення:
@@ -46,7 +46,7 @@ local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 -- Logger
 ----------------------------------------------------------------
 
-local log = Logger.new("MainServer", "1.2.0")
+local log = Logger.new("MainServer", "1.2.1")
 
 ----------------------------------------------------------------
 -- Services construction
@@ -148,5 +148,5 @@ end)
 log:Info("Boot", "MainServer ready")
 
 ----------------------------------------------------------------
--- End of script: MainServer v1.1.1
+-- End of script: MainServer v1.2.1
 ----------------------------------------------------------------

@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-    Версія: 1.2.0
+  Версія: 1.2.1
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.0")
+local log = Logger.new("JoinScreenClient", "1.2.1")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -202,5 +202,5 @@ end
 player:GetAttributeChangedSignal("CurrentMode"):Connect(onModeChanged)
 
 ----------------------------------------------------------------
--- End of script: JoinScreenClient v1.1.0
+-- End of script: JoinScreenClient v1.2.1
 ----------------------------------------------------------------

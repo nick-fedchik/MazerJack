@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: JoinEventHandler
-    Версія: 1.2.0
+  Версія: 1.2.1
     Розміщення: ServerScriptService/Handlers/JoinEventHandler
 
     Призначення:
@@ -37,7 +37,7 @@ local Enums      = require(ReplicatedStorage.Shared.Enums)
 -- Module setup
 ----------------------------------------------------------------
 
-local log = Logger.new("JoinEventHandler", "1.2.0")
+local log = Logger.new("JoinEventHandler", "1.2.1")
 
 local remote = GameEvents.GetGameRemote()
 
@@ -80,5 +80,5 @@ end)
 log:Info("Init", "JoinEventHandler ready")
 
 ----------------------------------------------------------------
--- End of script: JoinEventHandler v1.2.0
+-- End of script: JoinEventHandler v1.2.1
 ----------------------------------------------------------------

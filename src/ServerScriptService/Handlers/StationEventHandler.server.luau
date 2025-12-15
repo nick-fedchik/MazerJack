@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: StationEventHandler
-	Версія: 1.2.0
+	Версія: 1.2.1
     Розміщення: ServerScriptService/Handlers/StationEventHandler
 
     Призначення:
@@ -42,7 +42,7 @@ local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 -- Module setup
 ----------------------------------------------------------------
 
-local log = Logger.new("StationEventHandler", "1.2.0")
+local log = Logger.new("StationEventHandler", "1.2.1")
 
 local remote = GameEvents.GetStationRemote()
 
@@ -160,5 +160,5 @@ end)
 log:Info("Init", "StationEventHandler ready")
 
 ----------------------------------------------------------------
--- End of script: StationEventHandler v1.1.1
+-- End of script: StationEventHandler v1.2.1
 ----------------------------------------------------------------

@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: GameEvents
-    Версія: 1.2.0
+  Версія: 1.2.1
   Розміщення: ReplicatedStorage/Shared/GameEvents
 
     Призначення:
@@ -94,12 +94,12 @@ GameEvents.Event = {
 
 do
 	local Logger = require(ReplicatedStorage.Shared:WaitForChild("Logger"))
-  local log = Logger.new("GameEvents", "1.2.0")
+  local log = Logger.new("GameEvents", "1.2.1")
 	log:Info("Init", "GameEvents contract loaded")
 end
 
 return GameEvents
 
 ----------------------------------------------------------------
--- End of script: GameEvents v1.2.0
+-- End of script: GameEvents v1.2.1
 ----------------------------------------------------------------
