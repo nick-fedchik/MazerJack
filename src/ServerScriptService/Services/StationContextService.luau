@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: StationContextService
-    Версія: 1.2.0
+	Версія: 1.2.1
     Розміщення: ServerScriptService/Services/StationContextService
 
     Призначення:
@@ -17,7 +17,10 @@
           StellarStation/Modules/<ModuleName>/** (BasePart)
           StellarStation/Gateways/<GateName>/** (BasePart)
       - На дотик до модуля: оновлює CurrentStationModule і очищає CurrentStationGate
-      - На дотик до шлюза: оновлює CurrentStationGate (модуль не змінює)
+	  - На дотик до шлюза: оновлює CurrentStationGate (модуль не змінює)
+	  - Gateway model може мати Attribute GateLocked: boolean
+		  true  => locked (лог спроби входу)
+		  false => auto/unlocked (лог спроби входу)
 
     Взаємодія / контракти:
       - Викликається зі StateStation:OnEnter, щоб виставити стартовий модуль.
@@ -51,11 +54,13 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local StationContextService = {}
 StationContextService.__index = StationContextService
 
-local log = Logger.new("StationContextService", "1.2.0")
+local log = Logger.new("StationContextService", "1.2.1")
 
 local ATTR_MODE = "CurrentMode"
 local ATTR_MODULE = "CurrentStationModule"
 local ATTR_GATE = "CurrentStationGate"
+
+local GATE_ATTR_LOCKED = "GateLocked"
 
 ----------------------------------------------------------------
 -- Helpers (private)
@@ -90,15 +95,36 @@ end
 --   string? | nil
 -- Хто використовує:
 --   resolveModuleName / resolveGateName
-local function resolveDirectChildName(instance: Instance, container: Instance)
+local function resolveDirectChildInstance(instance: Instance, container: Instance)
 	local current = instance
 	while current and current.Parent do
 		if current.Parent == container then
-			return current.Name
+			return current
 		end
 		current = current.Parent
 	end
 	return nil
+end
+
+-- Exposed for tests and reuse.
+function StationContextService.ResolveDirectChildInstance(instance: Instance, container: Instance)
+	return resolveDirectChildInstance(instance, container)
+end
+
+-- Exposed for tests and runtime: ensures GateLocked exists and returns it.
+function StationContextService.GetOrInitGateLocked(gateModel: Instance, defaultLocked: boolean?)
+	local v = gateModel:GetAttribute(GATE_ATTR_LOCKED)
+	if type(v) == "boolean" then
+		return v
+	end
+
+	local init = defaultLocked
+	if init == nil then
+		init = true
+	end
+
+	gateModel:SetAttribute(GATE_ATTR_LOCKED, init)
+	return init
 end
 
 ----------------------------------------------------------------
@@ -266,9 +292,9 @@ function StationContextService:_onTouched(kind: string, stationPart: BasePart, o
 	end
 
 	if kind == "Modules" and self._modules then
-		local moduleName = resolveDirectChildName(stationPart, self._modules)
-		if moduleName then
-			self:SetPlayerModule(player, moduleName)
+		local moduleInst = resolveDirectChildInstance(stationPart, self._modules)
+		if moduleInst then
+			self:SetPlayerModule(player, moduleInst.Name)
 			-- When a module is known, player is no longer "in gate".
 			self:SetPlayerGate(player, nil)
 		end
@@ -276,10 +302,12 @@ function StationContextService:_onTouched(kind: string, stationPart: BasePart, o
 	end
 
 	if kind == "Gateways" and self._gateways then
-		local gateName = resolveDirectChildName(stationPart, self._gateways)
-		if gateName then
+		local gateInst = resolveDirectChildInstance(stationPart, self._gateways)
+		if gateInst then
+			local gateName = gateInst.Name
+			local locked = StationContextService.GetOrInitGateLocked(gateInst)
 			self:SetPlayerGate(player, gateName)
-			log:Info(fn, "userId=%d entered gate=%s", player.UserId, gateName)
+			log:Info(fn, "userId=%d gate=%s attemptEnter locked=%s", player.UserId, gateName, tostring(locked))
 		end
 	end
 end
@@ -364,5 +392,5 @@ end
 return StationContextService
 
 ----------------------------------------------------------------
--- End of script: StationContextService v1.2.0
+-- End of script: StationContextService v1.2.1
 ----------------------------------------------------------------

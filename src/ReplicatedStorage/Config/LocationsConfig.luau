@@ -2,7 +2,7 @@
     Тип: ModuleScript
     Назва: LocationsConfig
     Версія: 1.2.0
-    Розміщення: ReplicatedStorage/LocationsConfig
+    Розміщення: ReplicatedStorage/Config/LocationsConfig
 
     Призначення:
       Конфігурація планет/локацій для наступних спринтів (зараз — заглушка).
@@ -32,5 +32,5 @@ LocationsConfig.Planets = {
 return LocationsConfig
 
 ----------------------------------------------------------------
--- End of script: LocationsConfig v1.1.0
+-- End of script: LocationsConfig v1.2.0
 ----------------------------------------------------------------

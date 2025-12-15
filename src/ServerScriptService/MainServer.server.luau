@@ -41,6 +41,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local Enums  = require(ReplicatedStorage.Shared.Enums)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
+local GameConfig = require(ReplicatedStorage.Config.GameConfig)
 
 ----------------------------------------------------------------
 -- Logger
@@ -113,6 +114,7 @@ _G.GameStateMachine = machine
 _G.MazerJackServices = Services
 
 log:Info("Boot", "GameStateMachine initialized")
+log:Info("Boot", "%s v%s", tostring(GameConfig.GameName), tostring(GameConfig.GameVersion))
 
 ----------------------------------------------------------------
 -- Player lifecycle

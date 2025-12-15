@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Rojo: Build (default.project.json)",
+      "type": "shell",
+      "command": "rojo",
+      "args": [
+        "build",
+        "default.project.json",
+        "-o",
+        "build.rbxlx"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

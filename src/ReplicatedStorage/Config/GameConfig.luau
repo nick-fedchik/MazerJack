@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: GameConfig
-  Версія: 1.2.1
+	Версія: 1.2.2
     Розміщення: ReplicatedStorage/Config/GameConfig
 
     Призначення:
@@ -25,7 +25,7 @@ local GameConfig = {}
 ----------------------------------------------------------------
 
 GameConfig.GameName = "MazerJack"
-GameConfig.GameVersion = "1.2.1"
+GameConfig.GameVersion = "1.2.2"
 
 ----------------------------------------------------------------
 -- DataStore (персистенс гравця)
@@ -43,5 +43,5 @@ GameConfig.PersistentSchemaVersion = "1.2.0"
 return GameConfig
 
 ----------------------------------------------------------------
--- End of script: GameConfig v1.2.1
+-- End of script: GameConfig v1.2.2
 ----------------------------------------------------------------
