@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: Enums
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ReplicatedStorage/Shared/Enums
 
     Призначення:
@@ -56,5 +56,5 @@ Enums.ResumeTarget = {
 return Enums
 
 ----------------------------------------------------------------
--- End of script: Enums v1.1.0
+-- End of script: Enums v1.2.0
 ----------------------------------------------------------------

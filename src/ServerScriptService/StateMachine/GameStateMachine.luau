@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: GameStateMachine
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/StateMachine/GameStateMachine
 
     Призначення:
@@ -40,7 +40,7 @@ local Enums  = require(ReplicatedStorage.Shared.Enums)
 local GameStateMachine = {}
 GameStateMachine.__index = GameStateMachine
 
-local log = Logger.new("GameStateMachine", "1.1.0")
+local log = Logger.new("GameStateMachine", "1.2.0")
 
 ----------------------------------------------------------------
 -- Construction
@@ -214,5 +214,5 @@ end
 
 return GameStateMachine
 ----------------------------------------------------------------
--- End of script: GameStateMachine v1.1.0
+-- End of script: GameStateMachine v1.2.0
 ----------------------------------------------------------------

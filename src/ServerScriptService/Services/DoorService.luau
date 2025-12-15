@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: DoorService
-        Версія: 1.1.0
+        Версія: 1.2.0
     Розміщення: ServerScriptService/Services/DoorService
 
     Призначення:
@@ -43,7 +43,7 @@ local Logger = require(ReplicatedStorage.Shared.Logger)
 local DoorService = {}
 DoorService.__index = DoorService
 
-local log = Logger.new("DoorService", "1.0.0")
+local log = Logger.new("DoorService", "1.2.0")
 
 -- Configuration
 local DOOR_OPEN_DISTANCE = 8 -- Distance in studs to trigger door
@@ -203,5 +203,5 @@ end
 
 return DoorService
 ----------------------------------------------------------------
--- End of script: DoorService v1.0.0
+-- End of script: DoorService v1.2.0
 ----------------------------------------------------------------

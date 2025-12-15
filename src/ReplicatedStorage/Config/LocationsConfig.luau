@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: LocationsConfig
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ReplicatedStorage/LocationsConfig
 
     Призначення:
@@ -32,5 +32,5 @@ LocationsConfig.Planets = {
 return LocationsConfig
 
 ----------------------------------------------------------------
--- End of script: LocationsConfig v1.1.0
+-- End of script: LocationsConfig v1.2.0
 ----------------------------------------------------------------

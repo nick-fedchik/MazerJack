@@ -4,7 +4,7 @@ local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiController", "1.0.0")
+local log = Logger.new("GuiController", "1.2.0")
 
 log:Info("Starting GUI controller...")
 

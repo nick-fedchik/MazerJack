@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: PlayerService
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/Services/PlayerService
 
     Призначення:
@@ -37,7 +37,7 @@ local Logger = require(ReplicatedStorage.Shared.Logger)
 local PlayerService = {}
 PlayerService.__index = PlayerService
 
-local log = Logger.new("PlayerService", "1.1.0")
+local log = Logger.new("PlayerService", "1.2.0")
 
 ----------------------------------------------------------------
 -- Construction
@@ -108,5 +108,5 @@ end
 
 return PlayerService
 ----------------------------------------------------------------
--- End of script: PlayerService v1.1.0
+-- End of script: PlayerService v1.2.0
 ----------------------------------------------------------------

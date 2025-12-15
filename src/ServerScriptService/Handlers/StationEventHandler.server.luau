@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: StationEventHandler
-    Версія: 1.1.1
+    Версія: 1.2.0
     Розміщення: ServerScriptService/Handlers/StationEventHandler
 
     Призначення:
@@ -41,7 +41,7 @@ local Logger = require(ReplicatedStorage.Shared.Logger)
 -- Module setup
 ----------------------------------------------------------------
 
-local log = Logger.new("StationEventHandler", "1.1.1")
+local log = Logger.new("StationEventHandler", "1.2.0")
 
 local remote = ReplicatedStorage.Remotes.StationEvent
 
@@ -159,5 +159,5 @@ end)
 log:Info("Init", "StationEventHandler ready")
 
 ----------------------------------------------------------------
--- End of script: StationEventHandler v1.1.1
+-- End of script: StationEventHandler v1.2.0
 ----------------------------------------------------------------

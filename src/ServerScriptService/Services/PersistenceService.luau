@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: PersistenceService
-    Версія: 1.1.0
+    Версія: 1.2.0
     Розміщення: ServerScriptService/Services/PersistenceService
 
     Призначення:
@@ -48,7 +48,7 @@ local GameConfig = require(ReplicatedStorage.Config.GameConfig)
 local PersistenceService = {}
 PersistenceService.__index = PersistenceService
 
-local log = Logger.new("PersistenceService", "1.1.0")
+local log = Logger.new("PersistenceService", "1.2.0")
 
 ----------------------------------------------------------------
 -- Helpers
@@ -246,5 +246,5 @@ end
 
 return PersistenceService
 ----------------------------------------------------------------
--- End of script: PersistenceService v1.1.0
+-- End of script: PersistenceService v1.2.0
 ----------------------------------------------------------------

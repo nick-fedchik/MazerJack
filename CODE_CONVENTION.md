@@ -21,7 +21,7 @@ Code Convention v1.1
 --[[
 Тип: Script | LocalScript | ModuleScript
 Назва: <ScriptName>
-Версія: 1.1.X
+Версія: 1.2.X
 Розміщення: <Exact Roblox path, напр. ServerScriptService/Services/PlayerService>
 
     Призначення:
@@ -124,7 +124,7 @@ Logger використовується всюди
 
 Кожен скрипт має власний Logger:
 
-local log = Logger.new("ScriptName", "1.1.X")
+local log = Logger.new("ScriptName", "1.2.X")
 
 Обов’язкові логи:
 
@@ -170,7 +170,7 @@ return ModuleName
 
 ---
 
-## -- End of script: ModuleName v1.1.X
+## -- End of script: ModuleName v1.2.X
 
 ❌ Заборонено:
 
@@ -180,9 +180,9 @@ footer перед return
 
 8. Версіонування
 
-GameConfig.GameVersion = "1.1.0" — baseline
-Усі скрипти стартують з 1.1.0
-Будь-яка правка = 1.1.1, 1.1.2, …
+GameConfig.GameVersion = "1.2.0" — baseline
+Усі скрипти стартують з 1.2.0
+Будь-яка правка = 1.2.1, 1.2.2, …
 
 Заборонено:
 різні major/minor у межах однієї ітерації

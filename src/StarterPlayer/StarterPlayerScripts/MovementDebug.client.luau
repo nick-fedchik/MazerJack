@@ -7,7 +7,7 @@ local isDebugging = true
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("MovementDebug", "1.0.0")
+local log = Logger.new("MovementDebug", "1.2.0")
 
 -- Create debug GUI
 local screenGui = Instance.new("ScreenGui")

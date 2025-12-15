@@ -30,7 +30,7 @@ Non-conformant files (details & suggested fixes)
 3. `ServerScriptService/Services/DoorService.luau`
 
 - Issues (fixed):
-  - Header version updated from `1.0.0` to `1.1.0`.
+  - Header version updated from `1.0.0` to `1.2.0`.
   - Added `Взаємодія / контракти` and `Архітектурні правила` sections to header.
   - Replaced direct use of `game.ReplicatedStorage` in `require` with `local ReplicatedStorage = game:GetService("ReplicatedStorage")` for consistency.
 - Suggestions:
