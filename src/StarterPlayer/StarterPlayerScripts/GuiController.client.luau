@@ -2,53 +2,57 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
-print("[GuiController] Starting GUI controller...")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Logger = require(ReplicatedStorage.Shared.Logger)
+local log = Logger.new("GuiController", "1.0.0")
+
+log:Info("Starting GUI controller...")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
-print("[GuiController] PlayerGui found")
+log:Info("PlayerGui found")
 
 -- Чекаємо на GUI
 local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
 local stationGui = playerGui:WaitForChild("StationGui", 5)
 
 if joinGui then
-    print("[GuiController] JoinGameGui found")
+    log:Info("JoinGameGui found")
 else
-    print("[GuiController] JoinGameGui NOT found after 10 seconds!")
+    log:Warn("JoinGameGui NOT found after 10 seconds!")
 end
 
 if stationGui then
-    print("[GuiController] StationGui found")
+    log:Info("StationGui found")
 else
-    print("[GuiController] StationGui NOT found after 5 seconds!")
+    log:Warn("StationGui NOT found after 5 seconds!")
 end
 
 -- Функція оновлення GUI
 local function updateGui()
     local currentMode = player:GetAttribute("CurrentMode")
-    print("[GuiController] Updating GUI for mode:", currentMode)
+    log:Info("Updating GUI for mode: " .. tostring(currentMode))
     
     if currentMode == "Join" then
         if joinGui then
             joinGui.Enabled = true
-            print("[GuiController] JoinGameGui enabled")
+            log:Info("JoinGameGui enabled")
         end
         if stationGui then
             stationGui.Enabled = false
-            print("[GuiController] StationGui disabled")
+            log:Info("StationGui disabled")
         end
     elseif currentMode == "Station" then
         if joinGui then
             joinGui.Enabled = false
-            print("[GuiController] JoinGameGui disabled")
+            log:Info("JoinGameGui disabled")
         end
         if stationGui then
             stationGui.Enabled = true
-            print("[GuiController] StationGui enabled")
+            log:Info("StationGui enabled")
         end
     else
-        print("[GuiController] Unknown mode:", currentMode)
+        log:Warn("Unknown mode: " .. tostring(currentMode))
     end
 end
 
@@ -69,6 +73,6 @@ end)
 -- Початкове оновлення
 updateGui()
 
-print("[GuiController] GUI controller started")
+log:Info("GUI controller started")
 
 return "GuiController started"
