@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-  Версія: 1.2.2
+  Версія: 1.2.3
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.2")
+local log = Logger.new("JoinScreenClient", "1.2.3")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -55,6 +55,22 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("JoinGameGui")
 
+-- Ensure Join UI is visible by default (Sprint 1 baseline)
+gui.Enabled = true
+
+----------------------------------------------------------------
+-- Function: waitForDescendant
+-- Призначення:
+--   Безпечно очікує на нащадка з певною назвою в ієрархії GUI.
+-- Вхідні параметри:
+--   parent: Instance
+--   name: string
+--   timeoutSeconds: number? (default 10)
+-- Вихід:
+--   Instance | nil
+-- Хто використовує:
+--   JoinScreenClient (resolution без жорсткої залежності від Root)
+----------------------------------------------------------------
 local function waitForDescendant(parent: Instance, name: string, timeoutSeconds: number?): Instance?
   local timeout = timeoutSeconds or 10
   local started = os.clock()
@@ -76,7 +92,10 @@ local lblGameStatus = waitForDescendant(gui, "GameStatus", 10)
 local btnJoinGame = waitForDescendant(gui, "JoinGameButton", 10)
 
 if not (lblPlayerName and lblPlayerStatus and lblGameStatus and btnJoinGame) then
-  log:Error("Init", "Join UI elements missing (check names: PlayerName/PlayerStatus/GameStatus/JoinGameButton)")
+  log:Error(
+    "Init",
+    "Join UI elements missing (check names: PlayerName/PlayerStatus/GameStatus/JoinGameButton)"
+  )
   return
 end
 
@@ -212,5 +231,5 @@ end
 player:GetAttributeChangedSignal("CurrentMode"):Connect(onModeChanged)
 
 ----------------------------------------------------------------
--- End of script: JoinScreenClient v1.2.1
+-- End of script: JoinScreenClient v1.2.3
 ----------------------------------------------------------------

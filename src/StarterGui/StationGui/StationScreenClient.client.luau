@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: StationScreenClient
-	Версія: 1.2.2
+	Версія: 1.2.3
     Розміщення: StarterGui/StationGui/StationScreenClient
 
     Призначення:
@@ -37,7 +37,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("StationScreenClient", "1.2.2")
+local log = Logger.new("StationScreenClient", "1.2.3")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -48,6 +48,19 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("StationGui")
 
+----------------------------------------------------------------
+-- Function: waitForDescendant
+-- Призначення:
+--   Безпечно очікує на нащадка з певною назвою в ієрархії GUI.
+-- Вхідні параметри:
+--   parent: Instance
+--   name: string
+--   timeoutSeconds: number? (default 10)
+-- Вихід:
+--   Instance | nil
+-- Хто використовує:
+--   StationScreenClient (resolution без жорсткої залежності від Root)
+----------------------------------------------------------------
 local function waitForDescendant(parent: Instance, name: string, timeoutSeconds: number?): Instance?
 	local timeout = timeoutSeconds or 10
 	local started = os.clock()
@@ -171,5 +184,5 @@ end
 (btnExit :: any).MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.2.2
+-- End of script: StationScreenClient v1.2.3
 ----------------------------------------------------------------

@@ -1,7 +1,7 @@
 --[[
         Тип: LocalScript
         Назва: GuiController
-        Версія: 1.2.1
+        Версія: 1.2.2
         Розміщення: StarterPlayer/StarterPlayerScripts/GuiController
 
         Призначення:
@@ -21,7 +21,7 @@ local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiController", "1.2.1")
+local log = Logger.new("GuiController", "1.2.2")
 
 log:Info("Init", "GuiController starting")
 
@@ -54,6 +54,12 @@ end
 local function updateGui()
     local currentMode = player:GetAttribute("CurrentMode")
     log:Info("Update", "Updating GUI for mode=%s", tostring(currentMode))
+
+    -- Default behavior: if mode is not replicated yet, start in Join
+    if currentMode == nil then
+        currentMode = "Join"
+        log:Info("Update", "CurrentMode missing -> defaulting to Join")
+    end
     
     if currentMode == "Join" then
         if joinGui then
@@ -97,6 +103,6 @@ updateGui()
 
 log:Info("Done", "GUI controller started")
 
--- End of script: GuiController v1.2.1
+-- End of script: GuiController v1.2.2
 
 return "GuiController started"
