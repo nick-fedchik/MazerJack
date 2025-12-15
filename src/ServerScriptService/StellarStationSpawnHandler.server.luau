@@ -1,0 +1,2 @@
+-- DELETED: moved to archived/StellarStationSpawnHandler.server.luau
+-- This file should no longer be present in the active codebase.
