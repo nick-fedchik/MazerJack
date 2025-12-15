@@ -147,5 +147,5 @@ end)
 log:Info("Init", "Door system initialized")
 
 ----------------------------------------------------------------
--- End of script: DoorTest v1.2.0
+-- End of script: DoorTest v1.1.0
 ----------------------------------------------------------------

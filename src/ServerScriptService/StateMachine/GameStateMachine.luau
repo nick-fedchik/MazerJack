@@ -214,5 +214,5 @@ end
 
 return GameStateMachine
 ----------------------------------------------------------------
--- End of script: GameStateMachine v1.2.0
+-- End of script: GameStateMachine v1.1.0
 ----------------------------------------------------------------

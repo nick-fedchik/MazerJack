@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: StationEventHandler
-    Версія: 1.2.0
+	Версія: 1.2.0
     Розміщення: ServerScriptService/Handlers/StationEventHandler
 
     Призначення:
@@ -159,5 +159,5 @@ end)
 log:Info("Init", "StationEventHandler ready")
 
 ----------------------------------------------------------------
--- End of script: StationEventHandler v1.2.0
+-- End of script: StationEventHandler v1.1.1
 ----------------------------------------------------------------

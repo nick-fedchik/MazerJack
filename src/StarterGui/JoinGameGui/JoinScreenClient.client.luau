@@ -197,5 +197,5 @@ end
 player:GetAttributeChangedSignal("CurrentMode"):Connect(onModeChanged)
 
 ----------------------------------------------------------------
--- End of script: JoinScreenClient v1.2.0
+-- End of script: JoinScreenClient v1.1.0
 ----------------------------------------------------------------

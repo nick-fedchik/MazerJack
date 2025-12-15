@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: StateStation
-    Версія: 1.2.0
+	Версія: 1.2.0
     Розміщення: ServerScriptService/StateMachine/StateStation
 
     Призначення:
@@ -221,5 +221,5 @@ end
 return StateStation
 
 ----------------------------------------------------------------
--- End of script: StateStation v1.2.0
+-- End of script: StateStation v1.1.3
 ----------------------------------------------------------------

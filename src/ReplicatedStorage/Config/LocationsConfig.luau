@@ -32,5 +32,5 @@ LocationsConfig.Planets = {
 return LocationsConfig
 
 ----------------------------------------------------------------
--- End of script: LocationsConfig v1.2.0
+-- End of script: LocationsConfig v1.1.0
 ----------------------------------------------------------------

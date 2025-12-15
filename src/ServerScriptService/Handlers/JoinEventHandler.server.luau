@@ -80,5 +80,5 @@ end)
 log:Info("Init", "JoinEventHandler ready")
 
 ----------------------------------------------------------------
--- End of script: JoinEventHandler v1.2.0
+-- End of script: JoinEventHandler v1.1.0
 ----------------------------------------------------------------

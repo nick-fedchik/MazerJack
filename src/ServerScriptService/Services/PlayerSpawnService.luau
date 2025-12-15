@@ -130,5 +130,5 @@ end
 
 return PlayerSpawnService
 ----------------------------------------------------------------
--- End of script: PlayerSpawnService v1.2.0
+-- End of script: PlayerSpawnService v1.1.0
 ----------------------------------------------------------------

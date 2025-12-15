@@ -27,5 +27,5 @@ end
 
 return StateLocation
 ----------------------------------------------------------------
--- End of script: StateLocation v1.2.0
+-- End of script: StateLocation v1.1.0
 ----------------------------------------------------------------

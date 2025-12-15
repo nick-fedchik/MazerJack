@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: PersistenceService
-    Версія: 1.2.0
+	Версія: 1.2.0
     Розміщення: ServerScriptService/Services/PersistenceService
 
     Призначення:
@@ -246,5 +246,5 @@ end
 
 return PersistenceService
 ----------------------------------------------------------------
--- End of script: PersistenceService v1.2.0
+-- End of script: PersistenceService v1.1.0
 ----------------------------------------------------------------

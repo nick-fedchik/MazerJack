@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: StationScreenClient
-    Версія: 1.2.0
+	Версія: 1.2.0
     Розміщення: StarterGui/StationGui/StationScreenClient
 
     Призначення:
@@ -154,5 +154,5 @@ end
 btnExit.MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.2.0
+-- End of script: StationScreenClient v1.1.1
 ----------------------------------------------------------------

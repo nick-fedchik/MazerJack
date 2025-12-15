@@ -108,5 +108,5 @@ end
 
 return PlayerService
 ----------------------------------------------------------------
--- End of script: PlayerService v1.2.0
+-- End of script: PlayerService v1.1.0
 ----------------------------------------------------------------
