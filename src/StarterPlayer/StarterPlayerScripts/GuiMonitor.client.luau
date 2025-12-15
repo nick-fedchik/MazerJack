@@ -1,4 +1,24 @@
--- GUI Monitor - перевіряє стан GUI при вході гравця
+--[[
+        Тип: LocalScript
+        Назва: GuiMonitor
+        Версія: 1.2.0
+        Розміщення: StarterPlayer/StarterPlayerScripts/GuiMonitor
+
+        Призначення:
+            Моніторить наявність та стан GUI елементів при вході гравця для швидкої діагностики.
+
+        Загальна логіка:
+            - Очікує `PlayerGui` і перевіряє ключові GUI (JoinGameGui, StationGui)
+            - Логує статус та наявність елементів
+
+        Взаємодія / контракти:
+            - Не взаємодіє через Remotes; лише читає `PlayerGui`
+
+        Архітектурні правила:
+            - Використовує тільки `Logger` для логів
+            - Не змінює state гри
+--]]
+
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
@@ -7,11 +27,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local log = Logger.new("GuiMonitor", "1.2.0")
 
-log:Info("Starting GUI monitoring...")
+log:Info("Init", "GuiMonitor starting")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
-print("[GuiMonitor] PlayerGui found")
+log:Info("PlayerGui found")
 
 -- Перевіряємо JoinGameGui
 local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
@@ -48,7 +68,7 @@ if joinGui then
         
         if gameTitle and gameVersion and playerContainer and loadingIndicator and joinButton then
             log:Info("✅ All main GUI elements found!")
-
+            
             -- Перевіряємо видимість
             log:Info("GameTitle.Visible: " .. tostring(gameTitle.Visible))
             log:Info("GameVersion.Visible: " .. tostring(gameVersion.Visible))
@@ -74,6 +94,8 @@ else
     log:Info("StationGui not found in PlayerGui (expected to be disabled initially)")
 end
 
-log:Info("GUI monitoring completed")
+log:Info("Done", "GUI monitoring completed")
+
+-- End of script: GuiMonitor v1.2.0
 
 return "GuiMonitor finished"

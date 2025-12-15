@@ -1,4 +1,21 @@
--- GUI Controller - керує видимістю GUI на основі атрибутів
+--[[
+        Тип: LocalScript
+        Назва: GuiController
+        Версія: 1.2.0
+        Розміщення: StarterPlayer/StarterPlayerScripts/GuiController
+
+        Призначення:
+            Керує видимістю Join/Station GUI в залежності від `CurrentMode` атрибуту гравця.
+
+        Загальна логіка:
+            - Слухає `AttributeChanged` для `CurrentMode`
+            - Включає/вимикає відповідні GUI
+
+        Архітектурні правила:
+            - Не робить spawn або бізнес-логіку
+            - Логує лише ключові зміни стану
+--]]
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -6,7 +23,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local log = Logger.new("GuiController", "1.2.0")
 
-log:Info("Starting GUI controller...")
+log:Info("Init", "GuiController starting")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
@@ -29,9 +46,14 @@ else
 end
 
 -- Функція оновлення GUI
+-- Function: updateGui
+-- Призначення:
+-- Оновлює видимість GUI на основі атрибуту `CurrentMode` гравця
+-- Вхідні параметри: None
+-- Вихід / ефект: змінює `Enabled` на `JoinGameGui` / `StationGui`
 local function updateGui()
     local currentMode = player:GetAttribute("CurrentMode")
-    log:Info("Updating GUI for mode: " .. tostring(currentMode))
+    log:Info("Update", "Updating GUI for mode=%s", tostring(currentMode))
     
     if currentMode == "Join" then
         if joinGui then
@@ -73,6 +95,8 @@ end)
 -- Початкове оновлення
 updateGui()
 
-log:Info("GUI controller started")
+log:Info("Done", "GUI controller started")
+
+-- End of script: GuiController v1.2.0
 
 return "GuiController started"
