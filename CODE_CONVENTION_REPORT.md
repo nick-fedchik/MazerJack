@@ -20,13 +20,12 @@ Non-conformant files (details & suggested fixes)
 
 2. `ServerScriptService/StellarStationSpawnHandler.server.luau`
 
-- Issues (partially addressed):
-  - Previously missing header/footer and function doc-blocks.
-  - Directly manipulates character spawn (`CharacterAdded` sets CFrame), which is better handled by `PlayerSpawnService`.
+- Status: Removed from active logic (archived/inert)
 - Actions taken:
-  - Added header, function doc-blocks, `Logger` usage and footer. Logic remains as a thin handler; full migration to `PlayerSpawnService` is recommended.
+  - Replaced handler body with an inert archival notice. Spawn behavior should be implemented in `PlayerSpawnService`.
 - Suggestions:
-  - Consider migrating spawn responsibilities into `PlayerSpawnService` for consistent spawn gating.
+  - Option A: Fully delete this file if no longer needed.
+  - Option B: Create a migration PR to move any remaining responsibilities into `PlayerSpawnService` and add tests.
 
 3. `ServerScriptService/Services/DoorService.luau`
 

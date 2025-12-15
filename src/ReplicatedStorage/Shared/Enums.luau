@@ -26,8 +26,12 @@ local Enums = {}
 
 Enums.GameState = {
 	Join     = "Join",
-	Station  = "Station",
-	Location = "Location",
+  StationSpawn = "StationSpawn",
+  Station       = "Station",
+  StationExplore= "StationExploration",
+  Location      = "Location",
+  LocationExplore = "LocationExploration",
+  RoundActive   = "RoundActive",
 }
 
 ----------------------------------------------------------------
