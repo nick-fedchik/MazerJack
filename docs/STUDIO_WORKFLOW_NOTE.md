@@ -10,6 +10,9 @@ If you edit UI directly in Studio, ensure these ScreenGuis exist under `StarterG
 - `StarterGui/JoinGameGui`
 - `StarterGui/StationGui`
 
+If you test spawning in Studio, ensure the station spawn exists under `Workspace`:
+- `Workspace/StellarStation/Modules/CommandModule/SpawnLocation`
+
 And if you want the scripts to bind to your custom UI, keep (or rename in code) these elements:
 - Join: `PlayerName`, `PlayerStatus`, `GameStatus`, `JoinGameButton`
 - Station: `Title`, `Subtitle`, `GoLocationButton`, `ExitGameButton`

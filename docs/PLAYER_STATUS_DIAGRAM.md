@@ -17,7 +17,7 @@ stateDiagram-v2
     Join --> Station: Client clicks Join Game\nGameEvent:JoinGame\nJoinEventHandler -> FSM:SetState("Station")
 
     Station: CurrentMode = "Station"
-    Station: Spawn enabled\nPlayerSpawnService:ApplySpawnForStation()\nLoadCharacter()
+    Station: Spawn enabled\nPlayerSpawnService:ApplySpawnForStation()\nStellarStation/Modules/CommandModule/SpawnLocation\nLoadCharacter()
     Station: JoinGameGui Enabled=false\nStationGui Enabled=true
 
     Station --> Join: ExitGame (Studio)\nStationEvent:ExitGame\nStateStation:RequestExitGame\nFSM:SetState("Join")

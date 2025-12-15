@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: PlayerSpawnService
-    Версія: 1.2.1
+    Версія: 1.2.2
     Розміщення: ServerScriptService/Services/PlayerSpawnService
 
     Призначення:
@@ -38,7 +38,7 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local PlayerSpawnService = {}
 PlayerSpawnService.__index = PlayerSpawnService
 
-local log = Logger.new("PlayerSpawnService", "1.2.1")
+local log = Logger.new("PlayerSpawnService", "1.2.2")
 
 local ATTR_SPAWN_ENABLED = "MJ_SpawnEnabled"
 
@@ -110,17 +110,28 @@ function PlayerSpawnService:ApplySpawnForStation(player)
 		return
 	end
 
-	local passengerRoom = station:FindFirstChild("PassengerRoom")
-	if not passengerRoom then
-		log:Error(fn, "PassengerRoom missing in StellarStation")
-		return
-	end
+  -- Updated station layout:
+  -- StellarStation
+  --   Modules
+  --     CommandModule
+  --       SpawnLocation
+  local modules = station:FindFirstChild("Modules")
+  if not modules then
+    log:Error(fn, "Modules folder missing in StellarStation")
+    return
+  end
 
-	local spawnLocation = passengerRoom:FindFirstChild("SpawnLocation")
-	if not spawnLocation then
-		log:Error(fn, "SpawnLocation missing in PassengerRoom")
-		return
-	end
+  local commandModule = modules:FindFirstChild("CommandModule")
+  if not commandModule then
+    log:Error(fn, "CommandModule missing in StellarStation.Modules")
+    return
+  end
+
+  local spawnLocation = commandModule:FindFirstChild("SpawnLocation")
+  if not spawnLocation then
+    log:Error(fn, "SpawnLocation missing in CommandModule")
+    return
+  end
 
   -- Studio/Rojo safety: ensure the spawn part is stable.
   if spawnLocation:IsA("BasePart") then
@@ -136,5 +147,5 @@ end
 
 return PlayerSpawnService
 ----------------------------------------------------------------
--- End of script: PlayerSpawnService v1.2.1
+-- End of script: PlayerSpawnService v1.2.2
 ----------------------------------------------------------------
