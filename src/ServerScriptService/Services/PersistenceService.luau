@@ -48,7 +48,7 @@ local GameConfig = require(ReplicatedStorage.Config.GameConfig)
 local PersistenceService = {}
 PersistenceService.__index = PersistenceService
 
-local log = Logger.new("PersistenceService", "1.2.0")
+local log = Logger.new("PersistenceService", "1.2.1")
 
 ----------------------------------------------------------------
 -- Helpers
@@ -96,7 +96,11 @@ end
 --]]
 function PersistenceService.new()
 	local self = setmetatable({}, PersistenceService)
-	self._store = DataStoreService:GetDataStore(GameConfig.DataStoreName)
+	if RunService:IsStudio() then
+		self._store = nil
+	else
+		self._store = DataStoreService:GetDataStore(GameConfig.DataStoreName)
+	end
 	self._cache = {} -- [userId] = state
 	return self
 end
@@ -133,6 +137,14 @@ end
 --]]
 function PersistenceService:Load(player)
 	local fn = "Load"
+
+	if not self._store then
+		local state = defaultState()
+		self._cache[player.UserId] = state
+		log:Warn(fn, "Load skipped (Studio) userId=%d", player.UserId)
+		return state
+	end
+
 	local key = self:_keyForUser(player.UserId)
 
 	local ok, data = pcall(function()
@@ -207,6 +219,12 @@ end
 --]]
 function PersistenceService:Save(player, state)
 	local fn = "Save"
+
+	if not self._store then
+		log:Warn(fn, "Save skipped (Studio) userId=%d", player.UserId)
+		return false
+	end
+
 	local s = state or self._cache[player.UserId]
 	if not s then return false end
 
@@ -218,10 +236,6 @@ function PersistenceService:Save(player, state)
 	end)
 
 	if not ok then
-		if RunService:IsStudio() then
-			log:Warn(fn, "Save skipped (Studio) userId=%d", player.UserId)
-			return false
-		end
 		log:Error(fn, "Save failed userId=%d err=%s", player.UserId, tostring(err))
 		return false
 	end
@@ -246,5 +260,5 @@ end
 
 return PersistenceService
 ----------------------------------------------------------------
--- End of script: PersistenceService v1.1.0
+-- End of script: PersistenceService v1.2.1
 ----------------------------------------------------------------

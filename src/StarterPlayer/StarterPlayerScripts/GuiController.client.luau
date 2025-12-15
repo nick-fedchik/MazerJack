@@ -1,7 +1,7 @@
 --[[
         Тип: LocalScript
         Назва: GuiController
-        Версія: 1.2.0
+        Версія: 1.2.1
         Розміщення: StarterPlayer/StarterPlayerScripts/GuiController
 
         Призначення:
@@ -21,28 +21,28 @@ local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiController", "1.2.0")
+local log = Logger.new("GuiController", "1.2.1")
 
 log:Info("Init", "GuiController starting")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
-log:Info("PlayerGui found")
+log:Info("Resolve", "PlayerGui found")
 
 -- Чекаємо на GUI
 local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
 local stationGui = playerGui:WaitForChild("StationGui", 5)
 
 if joinGui then
-    log:Info("JoinGameGui found")
+    log:Info("Resolve", "JoinGameGui found")
 else
-    log:Warn("JoinGameGui NOT found after 10 seconds!")
+    log:Warn("Resolve", "JoinGameGui NOT found after 10 seconds")
 end
 
 if stationGui then
-    log:Info("StationGui found")
+    log:Info("Resolve", "StationGui found")
 else
-    log:Warn("StationGui NOT found after 5 seconds!")
+    log:Warn("Resolve", "StationGui NOT found after 5 seconds")
 end
 
 -- Функція оновлення GUI
@@ -74,7 +74,7 @@ local function updateGui()
             log:Info("StationGui enabled")
         end
     else
-        log:Warn("Unknown mode: " .. tostring(currentMode))
+        log:Warn("Update", "Unknown mode=%s", tostring(currentMode))
     end
 end
 
@@ -97,6 +97,6 @@ updateGui()
 
 log:Info("Done", "GUI controller started")
 
--- End of script: GuiController v1.2.0
+-- End of script: GuiController v1.2.1
 
 return "GuiController started"

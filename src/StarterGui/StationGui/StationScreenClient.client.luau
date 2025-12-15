@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: StationScreenClient
-	Версія: 1.2.1
+	Версія: 1.2.2
     Розміщення: StarterGui/StationGui/StationScreenClient
 
     Призначення:
@@ -37,7 +37,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("StationScreenClient", "1.2.1")
+local log = Logger.new("StationScreenClient", "1.2.2")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -47,23 +47,34 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("StationGui")
-local root = gui:WaitForChild("Root", 10)
 
-if not root then
-	log:Error("Init", "Root not found under StationGui (check UI hierarchy)")
-	return
+local function waitForDescendant(parent: Instance, name: string, timeoutSeconds: number?): Instance?
+	local timeout = timeoutSeconds or 10
+	local started = os.clock()
+	local found = parent:FindFirstChild(name, true)
+	while not found and (os.clock() - started) < timeout do
+		task.wait(0.1)
+		found = parent:FindFirstChild(name, true)
+	end
+	return found
 end
 
 ----------------------------------------------------------------
 -- UI elements
 ----------------------------------------------------------------
 
-local title    = root:WaitForChild("Title")
-local subtitle = root:WaitForChild("Subtitle")
+local title = waitForDescendant(gui, "Title", 10)
+local subtitle = waitForDescendant(gui, "Subtitle", 10)
+local btnGoLocation = waitForDescendant(gui, "GoLocationButton", 10)
+local btnExit = waitForDescendant(gui, "ExitGameButton", 10)
 
-local actions       = root:WaitForChild("Actions")
-local btnGoLocation = actions:WaitForChild("GoLocationButton")
-local btnExit       = actions:WaitForChild("ExitGameButton")
+if not (title and subtitle and btnGoLocation and btnExit) then
+	log:Error(
+		"Init",
+		"Station UI elements missing (check names: Title/Subtitle/GoLocationButton/ExitGameButton)"
+	)
+	return
+end
 
 ----------------------------------------------------------------
 -- Remote
@@ -77,8 +88,8 @@ local stationRemote = GameEvents.GetStationRemote()
 
 gui.Enabled = false
 
-title.Text    = "STATION"
-subtitle.Text = "Safe Zone"
+(title :: any).Text = "STATION"
+(subtitle :: any).Text = "Safe Zone"
 
 log:Info("Init", "StationScreen initialized and hidden")
 
@@ -130,7 +141,7 @@ local function onGoLocationClicked()
 	)
 end
 
-btnGoLocation.MouseButton1Click:Connect(onGoLocationClicked)
+(btnGoLocation :: any).MouseButton1Click:Connect(onGoLocationClicked)
 
 ----------------------------------------------------------------
 -- Function: onExitClicked
@@ -157,8 +168,8 @@ local function onExitGameClicked()
 	log:Info("ExitGameClick", "ExitGame event fired")
 end
 
-btnExit.MouseButton1Click:Connect(onExitGameClicked)
+(btnExit :: any).MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.2.1
+-- End of script: StationScreenClient v1.2.2
 ----------------------------------------------------------------

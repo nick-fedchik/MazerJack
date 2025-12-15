@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-  Версія: 1.2.1
+  Версія: 1.2.2
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.1")
+local log = Logger.new("JoinScreenClient", "1.2.2")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -54,21 +54,31 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("JoinGameGui")
-local root = gui:WaitForChild("Root", 10)
 
-if not root then
-  log:Error("Init", "Root not found under JoinGameGui (check UI hierarchy)")
-  return
+local function waitForDescendant(parent: Instance, name: string, timeoutSeconds: number?): Instance?
+  local timeout = timeoutSeconds or 10
+  local started = os.clock()
+  local found = parent:FindFirstChild(name, true)
+  while not found and (os.clock() - started) < timeout do
+    task.wait(0.1)
+    found = parent:FindFirstChild(name, true)
+  end
+  return found
 end
 
 ----------------------------------------------------------------
 -- UI elements
 ----------------------------------------------------------------
 
-local lblPlayerName   = root:WaitForChild("PlayerName")
-local lblPlayerStatus = root:WaitForChild("PlayerStatus")
-local lblGameStatus   = root:WaitForChild("GameStatus")
-local btnJoinGame     = root:WaitForChild("JoinGameButton")
+local lblPlayerName = waitForDescendant(gui, "PlayerName", 10)
+local lblPlayerStatus = waitForDescendant(gui, "PlayerStatus", 10)
+local lblGameStatus = waitForDescendant(gui, "GameStatus", 10)
+local btnJoinGame = waitForDescendant(gui, "JoinGameButton", 10)
+
+if not (lblPlayerName and lblPlayerStatus and lblGameStatus and btnJoinGame) then
+  log:Error("Init", "Join UI elements missing (check names: PlayerName/PlayerStatus/GameStatus/JoinGameButton)")
+  return
+end
 
 ----------------------------------------------------------------
 -- Remote
@@ -103,8 +113,8 @@ log:Info("Init", "JoinScreen initialized and locked")
 --   JoinScreenClient (Sprint 1)
 ----------------------------------------------------------------
 local function revealPlayerName()
-	lblPlayerName.Text = player.Name
-	lblPlayerName.Visible = true
+  (lblPlayerName :: any).Text = player.Name
+  (lblPlayerName :: any).Visible = true
 	log:Info("UI", "PlayerName shown")
 end
 
@@ -120,8 +130,8 @@ end
 --   JoinScreenClient (Sprint 1)
 ----------------------------------------------------------------
 local function revealPlayerStatus()
-	lblPlayerStatus.Text = "Ready"
-	lblPlayerStatus.Visible = true
+  (lblPlayerStatus :: any).Text = "Ready"
+  (lblPlayerStatus :: any).Visible = true
 	log:Info("UI", "PlayerStatus shown")
 end
 
@@ -137,11 +147,11 @@ end
 --   JoinScreenClient (Sprint 1)
 ----------------------------------------------------------------
 local function revealGameStatusAndEnableJoin()
-	lblGameStatus.Text = "Ready"
-	lblGameStatus.Visible = true
+  (lblGameStatus :: any).Text = "Ready"
+  (lblGameStatus :: any).Visible = true
 
-	btnJoinGame.Visible = true
-	btnJoinGame.Active  = true
+  (btnJoinGame :: any).Visible = true
+  (btnJoinGame :: any).Active  = true
 
 	log:Info("UI", "Join Game enabled")
 end

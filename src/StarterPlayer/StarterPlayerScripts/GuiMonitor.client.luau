@@ -1,7 +1,7 @@
 --[[
         Тип: LocalScript
         Назва: GuiMonitor
-        Версія: 1.2.0
+        Версія: 1.2.1
         Розміщення: StarterPlayer/StarterPlayerScripts/GuiMonitor
 
         Призначення:
@@ -25,77 +25,53 @@ local player = Players.LocalPlayer
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
-local log = Logger.new("GuiMonitor", "1.2.0")
+local log = Logger.new("GuiMonitor", "1.2.1")
 
 log:Info("Init", "GuiMonitor starting")
 
 -- Чекаємо на PlayerGui
 local playerGui = player:WaitForChild("PlayerGui")
-log:Info("PlayerGui found")
+log:Info("Resolve", "PlayerGui found")
 
 -- Перевіряємо JoinGameGui
 local joinGui = playerGui:WaitForChild("JoinGameGui", 10)
 if joinGui then
-    log:Info("JoinGameGui found in PlayerGui")
-    log:Info("JoinGameGui.Enabled: " .. tostring(joinGui.Enabled))
-    
-    -- Перевіряємо елементи
-    local root = joinGui:FindFirstChild("Root")
-    if root then
-        log:Info("Root frame found")
-        
-        local gameTitle = root:FindFirstChild("GameTitle")
-        local gameVersion = root:FindFirstChild("GameVersion")
-        local playerContainer = root:FindFirstChild("PlayerContainer")
-        local loadingIndicator = root:FindFirstChild("LoadingIndicator")
-        local joinButton = root:FindFirstChild("JoinGameButton")
-        
-        log:Info("GameTitle: " .. tostring(gameTitle and "found" or "NOT FOUND"))
-        log:Info("GameVersion: " .. tostring(gameVersion and "found" or "NOT FOUND"))
-        log:Info("PlayerContainer: " .. tostring(playerContainer and "found" or "NOT FOUND"))
-        log:Info("LoadingIndicator: " .. tostring(loadingIndicator and "found" or "NOT FOUND"))
-        log:Info("JoinGameButton: " .. tostring(joinButton and "found" or "NOT FOUND"))
-        
-        if playerContainer then
-            local avatarImage = playerContainer:FindFirstChild("AvatarImage")
-            local playerName = playerContainer:FindFirstChild("PlayerName")
-            local playerStatus = playerContainer:FindFirstChild("PlayerStatus")
-            
-            log:Info("AvatarImage: " .. tostring(avatarImage and "found" or "NOT FOUND"))
-            log:Info("PlayerName: " .. tostring(playerName and "found" or "NOT FOUND"))
-            log:Info("PlayerStatus: " .. tostring(playerStatus and "found" or "NOT FOUND"))
-        end
-        
-        if gameTitle and gameVersion and playerContainer and loadingIndicator and joinButton then
-            log:Info("✅ All main GUI elements found!")
-            
-            -- Перевіряємо видимість
-            log:Info("GameTitle.Visible: " .. tostring(gameTitle.Visible))
-            log:Info("GameVersion.Visible: " .. tostring(gameVersion.Visible))
-            log:Info("PlayerContainer.Visible: " .. tostring(playerContainer.Visible))
-            log:Info("LoadingIndicator.Visible: " .. tostring(loadingIndicator.Visible))
-            log:Info("JoinGameButton.Visible: " .. tostring(joinButton.Visible))
-        else
-            log:Warn("Some GUI elements missing!")
-        end
+    log:Info("Resolve", "JoinGameGui found Enabled=%s", tostring(joinGui.Enabled))
+
+    local hasRoot = joinGui:FindFirstChild("Root") ~= nil
+    if not hasRoot then
+        log:Warn("Resolve", "JoinGameGui.Root not found (ok if UI uses a different container)")
+    end
+
+    local playerName = joinGui:FindFirstChild("PlayerName", true)
+    local playerStatus = joinGui:FindFirstChild("PlayerStatus", true)
+    local gameStatus = joinGui:FindFirstChild("GameStatus", true)
+    local joinButton = joinGui:FindFirstChild("JoinGameButton", true)
+
+    log:Info("Check", "PlayerName=%s", tostring(playerName ~= nil))
+    log:Info("Check", "PlayerStatus=%s", tostring(playerStatus ~= nil))
+    log:Info("Check", "GameStatus=%s", tostring(gameStatus ~= nil))
+    log:Info("Check", "JoinGameButton=%s", tostring(joinButton ~= nil))
+
+    if playerName and playerStatus and gameStatus and joinButton then
+        log:Info("Check", "All JoinScreen expected elements found")
     else
-        log:Warn("Root frame not found!")
+        log:Warn("Check", "Some JoinScreen expected elements are missing")
     end
 else
-    log:Warn("JoinGameGui not found in PlayerGui after 10 seconds!")
+    log:Warn("Resolve", "JoinGameGui not found in PlayerGui after 10 seconds")
 end
 
 -- Перевіряємо StationGui
 local stationGui = playerGui:WaitForChild("StationGui", 5)
 if stationGui then
-    log:Info("StationGui found in PlayerGui")
-    log:Info("StationGui.Enabled: " .. tostring(stationGui.Enabled))
+    log:Info("Resolve", "StationGui found Enabled=%s", tostring(stationGui.Enabled))
 else
-    log:Info("StationGui not found in PlayerGui (expected to be disabled initially)")
+    log:Info("Resolve", "StationGui not found (expected to be disabled initially)")
 end
 
 log:Info("Done", "GUI monitoring completed")
 
--- End of script: GuiMonitor v1.2.0
+-- End of script: GuiMonitor v1.2.1
 
 return "GuiMonitor finished"
