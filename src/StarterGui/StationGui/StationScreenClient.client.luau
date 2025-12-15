@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: StationScreenClient
-	Версія: 1.2.3
+	Версія: 1.2.4
     Розміщення: StarterGui/StationGui/StationScreenClient
 
     Призначення:
@@ -37,7 +37,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("StationScreenClient", "1.2.3")
+local log = Logger.new("StationScreenClient", "1.2.4")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -89,6 +89,11 @@ if not (title and subtitle and btnGoLocation and btnExit) then
 	return
 end
 
+local titleLabel = title :: any
+local subtitleLabel = subtitle :: any
+local btnGoLocationButton = btnGoLocation :: any
+local btnExitButton = btnExit :: any
+
 ----------------------------------------------------------------
 -- Remote
 ----------------------------------------------------------------
@@ -101,8 +106,8 @@ local stationRemote = GameEvents.GetStationRemote()
 
 gui.Enabled = false
 
-(title :: any).Text = "STATION"
-(subtitle :: any).Text = "Safe Zone"
+titleLabel.Text = "STATION"
+subtitleLabel.Text = "Safe Zone"
 
 log:Info("Init", "StationScreen initialized and hidden")
 
@@ -154,7 +159,7 @@ local function onGoLocationClicked()
 	)
 end
 
-(btnGoLocation :: any).MouseButton1Click:Connect(onGoLocationClicked)
+btnGoLocationButton.MouseButton1Click:Connect(onGoLocationClicked)
 
 ----------------------------------------------------------------
 -- Function: onExitClicked
@@ -181,8 +186,8 @@ local function onExitGameClicked()
 	log:Info("ExitGameClick", "ExitGame event fired")
 end
 
-(btnExit :: any).MouseButton1Click:Connect(onExitGameClicked)
+btnExitButton.MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.2.3
+-- End of script: StationScreenClient v1.2.4
 ----------------------------------------------------------------

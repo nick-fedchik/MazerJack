@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-  Версія: 1.2.3
+  Версія: 1.2.4
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.3")
+local log = Logger.new("JoinScreenClient", "1.2.4")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -99,6 +99,11 @@ if not (lblPlayerName and lblPlayerStatus and lblGameStatus and btnJoinGame) the
   return
 end
 
+local lblPlayerNameLabel = lblPlayerName :: any
+local lblPlayerStatusLabel = lblPlayerStatus :: any
+local lblGameStatusLabel = lblGameStatus :: any
+local btnJoinGameButton = btnJoinGame :: any
+
 ----------------------------------------------------------------
 -- Remote
 ----------------------------------------------------------------
@@ -111,12 +116,12 @@ local gameRemote = GameEvents.GetGameRemote()
 
 gui.Enabled = true
 
-lblPlayerName.Visible   = false
-lblPlayerStatus.Visible = false
-lblGameStatus.Visible   = false
+lblPlayerNameLabel.Visible = false
+lblPlayerStatusLabel.Visible = false
+lblGameStatusLabel.Visible = false
 
-btnJoinGame.Visible = false
-btnJoinGame.Active  = false
+btnJoinGameButton.Visible = false
+btnJoinGameButton.Active = false
 
 log:Info("Init", "JoinScreen initialized and locked")
 
@@ -132,8 +137,8 @@ log:Info("Init", "JoinScreen initialized and locked")
 --   JoinScreenClient (Sprint 1)
 ----------------------------------------------------------------
 local function revealPlayerName()
-  (lblPlayerName :: any).Text = player.Name
-  (lblPlayerName :: any).Visible = true
+  lblPlayerNameLabel.Text = player.Name
+  lblPlayerNameLabel.Visible = true
 	log:Info("UI", "PlayerName shown")
 end
 
@@ -149,8 +154,8 @@ end
 --   JoinScreenClient (Sprint 1)
 ----------------------------------------------------------------
 local function revealPlayerStatus()
-  (lblPlayerStatus :: any).Text = "Ready"
-  (lblPlayerStatus :: any).Visible = true
+  lblPlayerStatusLabel.Text = "Ready"
+  lblPlayerStatusLabel.Visible = true
 	log:Info("UI", "PlayerStatus shown")
 end
 
@@ -166,11 +171,11 @@ end
 --   JoinScreenClient (Sprint 1)
 ----------------------------------------------------------------
 local function revealGameStatusAndEnableJoin()
-  (lblGameStatus :: any).Text = "Ready"
-  (lblGameStatus :: any).Visible = true
+	lblGameStatusLabel.Text = "Ready"
+	lblGameStatusLabel.Visible = true
 
-  (btnJoinGame :: any).Visible = true
-  (btnJoinGame :: any).Active  = true
+	btnJoinGameButton.Visible = true
+	btnJoinGameButton.Active = true
 
 	log:Info("UI", "Join Game enabled")
 end
@@ -195,15 +200,15 @@ task.delay(1.5, revealGameStatusAndEnableJoin)
 --   Кнопка JoinGameButton
 ----------------------------------------------------------------
 local function onJoinGameClicked()
-	lblGameStatus.Text = "Joining..."
-	btnJoinGame.Active = false
+  lblGameStatusLabel.Text = "Joining..."
+  btnJoinGameButton.Active = false
 
 	log:Info("JoinClick", "JoinGame requested userId=%d", player.UserId)
 
 	gameRemote:FireServer(GameEvents.Event.JoinGame)
 end
 
-btnJoinGame.MouseButton1Click:Connect(onJoinGameClicked)
+btnJoinGameButton.MouseButton1Click:Connect(onJoinGameClicked)
 
 ----------------------------------------------------------------
 -- Function: onModeChanged
@@ -231,5 +236,5 @@ end
 player:GetAttributeChangedSignal("CurrentMode"):Connect(onModeChanged)
 
 ----------------------------------------------------------------
--- End of script: JoinScreenClient v1.2.3
+-- End of script: JoinScreenClient v1.2.4
 ----------------------------------------------------------------

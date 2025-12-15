@@ -1,7 +1,7 @@
 --[[
     Тип: Script
     Назва: MainServer
-  Версія: 1.2.1
+	Версія: 1.2.2
     Розміщення: ServerScriptService/MainServer
 
     Призначення:
@@ -46,7 +46,10 @@ local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 -- Logger
 ----------------------------------------------------------------
 
-local log = Logger.new("MainServer", "1.2.1")
+local log = Logger.new("MainServer", "1.2.2")
+
+-- Important: prevent Roblox auto-spawning characters before JoinGame
+Players.CharacterAutoLoads = false
 
 ----------------------------------------------------------------
 -- Services construction
@@ -148,5 +151,5 @@ end)
 log:Info("Boot", "MainServer ready")
 
 ----------------------------------------------------------------
--- End of script: MainServer v1.2.1
+-- End of script: MainServer v1.2.2
 ----------------------------------------------------------------
