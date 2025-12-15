@@ -5,6 +5,10 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local isDebugging = true
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Logger = require(ReplicatedStorage.Shared.Logger)
+local log = Logger.new("MovementDebug", "1.0.0")
+
 -- Create debug GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MovementDebugGUI"
@@ -75,8 +79,8 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.F1 then
         isDebugging = not isDebugging
         screenGui.Enabled = isDebugging
-        print("Movement debug:", isDebugging and "ON" or "OFF")
+        log:Info("Movement debug: " .. (isDebugging and "ON" or "OFF"))
     end
 end)
 
-print("Movement debug script loaded. Press F1 to toggle debug GUI.")
+    log:Info("Movement debug script loaded. Press F1 to toggle debug GUI.")
