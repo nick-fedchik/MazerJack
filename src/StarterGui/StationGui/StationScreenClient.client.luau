@@ -35,6 +35,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 ----------------------------------------------------------------
 
 local Logger = require(ReplicatedStorage.Shared.Logger)
+local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
 local log = Logger.new("StationScreenClient", "1.2.0")
 
@@ -46,7 +47,12 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("StationGui")
-local root = gui:WaitForChild("Root")
+local root = gui:WaitForChild("Root", 10)
+
+if not root then
+	log:Error("Init", "Root not found under StationGui (check UI hierarchy)")
+	return
+end
 
 ----------------------------------------------------------------
 -- UI elements
@@ -63,7 +69,7 @@ local btnExit       = actions:WaitForChild("ExitGameButton")
 -- Remote
 ----------------------------------------------------------------
 
-local stationRemote = ReplicatedStorage.Remotes.StationEvent
+local stationRemote = GameEvents.GetStationRemote()
 
 ----------------------------------------------------------------
 -- Initial UI state
@@ -154,5 +160,5 @@ end
 btnExit.MouseButton1Click:Connect(onExitGameClicked)
 
 ----------------------------------------------------------------
--- End of script: StationScreenClient v1.1.1
+-- End of script: StationScreenClient v1.2.0
 ----------------------------------------------------------------

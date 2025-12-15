@@ -36,6 +36,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 ----------------------------------------------------------------
 
 local Logger = require(ReplicatedStorage.Shared.Logger)
+local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
 ----------------------------------------------------------------
 -- Module setup
@@ -43,7 +44,7 @@ local Logger = require(ReplicatedStorage.Shared.Logger)
 
 local log = Logger.new("StationEventHandler", "1.2.0")
 
-local remote = ReplicatedStorage.Remotes.StationEvent
+local remote = GameEvents.GetStationRemote()
 
 ----------------------------------------------------------------
 -- Helpers

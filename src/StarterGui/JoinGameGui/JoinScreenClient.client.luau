@@ -54,7 +54,12 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("JoinGameGui")
-local root = gui:WaitForChild("Root")
+local root = gui:WaitForChild("Root", 10)
+
+if not root then
+  log:Error("Init", "Root not found under JoinGameGui (check UI hierarchy)")
+  return
+end
 
 ----------------------------------------------------------------
 -- UI elements
@@ -69,7 +74,7 @@ local btnJoinGame     = root:WaitForChild("JoinGameButton")
 -- Remote
 ----------------------------------------------------------------
 
-local gameRemote = ReplicatedStorage.Remotes.GameEvent
+local gameRemote = GameEvents.GetGameRemote()
 
 ----------------------------------------------------------------
 -- Initial UI state

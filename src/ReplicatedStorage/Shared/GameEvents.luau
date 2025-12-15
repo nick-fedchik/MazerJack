@@ -2,7 +2,7 @@
     Тип: ModuleScript
     Назва: GameEvents
     Версія: 1.2.0
-    Розміщення: ReplicatedStorage/GameEvents
+  Розміщення: ReplicatedStorage/Shared/GameEvents
 
     Призначення:
       Контракт подій (імена + смисл) для RemoteEvent повідомлень між Client і Server.
@@ -32,6 +32,7 @@
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local GameEvents = {}
 
@@ -41,6 +42,34 @@ local GameEvents = {}
 
 GameEvents.RemoteName = "GameEvent"
 GameEvents.StationRemoteName = "StationEvent"
+
+----------------------------------------------------------------
+-- Remote resolution (server creates, client waits)
+----------------------------------------------------------------
+
+local function resolveRemote(remoteName: string): RemoteEvent
+  local existing = ReplicatedStorage:FindFirstChild(remoteName)
+  if existing and existing:IsA("RemoteEvent") then
+    return existing
+  end
+
+  if RunService:IsServer() then
+    local created = Instance.new("RemoteEvent")
+    created.Name = remoteName
+    created.Parent = ReplicatedStorage
+    return created
+  end
+
+  return ReplicatedStorage:WaitForChild(remoteName) :: any
+end
+
+function GameEvents.GetGameRemote(): RemoteEvent
+  return resolveRemote(GameEvents.RemoteName)
+end
+
+function GameEvents.GetStationRemote(): RemoteEvent
+  return resolveRemote(GameEvents.StationRemoteName)
+end
 
 ----------------------------------------------------------------
 -- Event names (UNIQUE STRINGS)
@@ -72,5 +101,5 @@ end
 return GameEvents
 
 ----------------------------------------------------------------
--- End of script: GameEvents v1.1.0
+-- End of script: GameEvents v1.2.0
 ----------------------------------------------------------------

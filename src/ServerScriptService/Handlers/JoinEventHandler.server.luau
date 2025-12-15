@@ -39,7 +39,7 @@ local Enums      = require(ReplicatedStorage.Shared.Enums)
 
 local log = Logger.new("JoinEventHandler", "1.2.0")
 
-local remote = ReplicatedStorage.Remotes.GameEvent
+local remote = GameEvents.GetGameRemote()
 
 ----------------------------------------------------------------
 -- Event handling
@@ -80,5 +80,5 @@ end)
 log:Info("Init", "JoinEventHandler ready")
 
 ----------------------------------------------------------------
--- End of script: JoinEventHandler v1.1.0
+-- End of script: JoinEventHandler v1.2.0
 ----------------------------------------------------------------

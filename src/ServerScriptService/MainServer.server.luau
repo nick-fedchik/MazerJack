@@ -40,6 +40,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local Enums  = require(ReplicatedStorage.Shared.Enums)
+local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
 ----------------------------------------------------------------
 -- Logger
@@ -93,8 +94,7 @@ local StateModules = {
 local GameStateMachine =
 	require(ServerScriptService.StateMachine.GameStateMachine)
 
-local gameEventRemote =
-	ReplicatedStorage.Remotes.GameEvent
+local gameEventRemote = GameEvents.GetGameRemote()
 
 local machine = GameStateMachine.new(
 	StateModules,
