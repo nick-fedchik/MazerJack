@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: StateStation
-	Версія: 1.2.0
+	Версія: 1.2.1
     Розміщення: ServerScriptService/StateMachine/StateStation
 
     Призначення:
@@ -52,7 +52,7 @@ local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 local StateStation = {}
 StateStation.__index = StateStation
 
-local log = Logger.new("StateStation", "1.2.0")
+local log = Logger.new("StateStation", "1.2.1")
 
 ----------------------------------------------------------------
 -- Constructor: new
@@ -105,6 +105,11 @@ function StateStation:OnEnter(player, context)
 	self._services.PlayerSpawnService:SetSpawnEnabled(player, true)
 	self._services.PlayerSpawnService:ApplySpawnForStation(player)
 
+	-- Station context (module/gate)
+	if self._services.StationContextService and self._services.StationContextService.OnEnterStation then
+		self._services.StationContextService:OnEnterStation(player)
+	end
+
 	-- Persistence (DATA ONLY)
 	local ps =
 		(context and context.PersistentState)
@@ -138,6 +143,9 @@ end
 ----------------------------------------------------------------
 function StateStation:OnExit(player, _context)
 	local fn = "OnExit"
+	if self._services.StationContextService and self._services.StationContextService.OnExitStation then
+		self._services.StationContextService:OnExitStation(player)
+	end
 	player:SetAttribute("IsInStation", false)
 	log:Info(fn, "Station exit userId=%d", player.UserId)
 end
