@@ -18,6 +18,7 @@ stateDiagram-v2
 
     Station: CurrentMode = "Station"
     Station: Spawn enabled\nPlayerSpawnService:ApplySpawnForStation()\nStellarStation/Modules/CommandModule/SpawnLocation\nLoadCharacter()
+    Station: Station context\nCurrentStationModule (default: CommandModule)\nCurrentStationGate (optional)
     Station: JoinGameGui Enabled=false\nStationGui Enabled=true
 
     Station --> Join: ExitGame (Studio)\nStationEvent:ExitGame\nStateStation:RequestExitGame\nFSM:SetState("Join")
@@ -43,9 +44,19 @@ stateDiagram-v2
 ## Key signals / contracts
 
 - Attribute: `Player:GetAttribute("CurrentMode")` is the single UI driver.
+- Station attributes (server authoritative):
+  - `Player:GetAttribute("CurrentStationModule")` (e.g. `CommandModule`)
+  - `Player:GetAttribute("CurrentStationGate")` (e.g. a gateway name while traversing)
 - RemoteEvents (canonical):
   - `ReplicatedStorage/GameEvent` (Join lifecycle)
   - `ReplicatedStorage/StationEvent` (Station actions)
+
+## Station context tracking (module / gateway)
+
+While `CurrentMode == "Station"`, the server updates station context attributes based on where the character moves:
+
+- Entering a Module updates `CurrentStationModule` and clears `CurrentStationGate`.
+- Entering a Gateway updates `CurrentStationGate` (module remains unchanged).
 
 ## Related docs
 
