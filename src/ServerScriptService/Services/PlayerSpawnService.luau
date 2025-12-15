@@ -1,7 +1,7 @@
 --[[
     Тип: ModuleScript
     Назва: PlayerSpawnService
-    Версія: 1.2.0
+    Версія: 1.2.1
     Розміщення: ServerScriptService/Services/PlayerSpawnService
 
     Призначення:
@@ -38,7 +38,7 @@ local Enums = require(ReplicatedStorage.Shared.Enums)
 local PlayerSpawnService = {}
 PlayerSpawnService.__index = PlayerSpawnService
 
-local log = Logger.new("PlayerSpawnService", "1.2.0")
+local log = Logger.new("PlayerSpawnService", "1.2.1")
 
 local ATTR_SPAWN_ENABLED = "MJ_SpawnEnabled"
 
@@ -122,6 +122,12 @@ function PlayerSpawnService:ApplySpawnForStation(player)
 		return
 	end
 
+  -- Studio/Rojo safety: ensure the spawn part is stable.
+  if spawnLocation:IsA("BasePart") then
+    spawnLocation.Anchored = true
+    spawnLocation.CanCollide = true
+  end
+
 	player.RespawnLocation = spawnLocation
 	player:LoadCharacter()
 
@@ -130,5 +136,5 @@ end
 
 return PlayerSpawnService
 ----------------------------------------------------------------
--- End of script: PlayerSpawnService v1.1.0
+-- End of script: PlayerSpawnService v1.2.1
 ----------------------------------------------------------------
