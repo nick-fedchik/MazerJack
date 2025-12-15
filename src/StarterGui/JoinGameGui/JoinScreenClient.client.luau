@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-  Версія: 1.2.4
+  Версія: 1.2.5
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.4")
+local log = Logger.new("JoinScreenClient", "1.2.5")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -54,9 +54,6 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("JoinGameGui")
-
--- Ensure Join UI is visible by default (Sprint 1 baseline)
-gui.Enabled = true
 
 ----------------------------------------------------------------
 -- Function: waitForDescendant
@@ -114,7 +111,9 @@ local gameRemote = GameEvents.GetGameRemote()
 -- Initial UI state
 ----------------------------------------------------------------
 
-gui.Enabled = true
+-- NOTE:
+-- JoinGameGui is expected to be Disabled by default in assets.
+-- Visibility is controlled via CurrentMode (see onModeChanged).
 
 lblPlayerNameLabel.Visible = false
 lblPlayerStatusLabel.Visible = false
@@ -124,6 +123,7 @@ btnJoinGameButton.Visible = false
 btnJoinGameButton.Active = false
 
 log:Info("Init", "JoinScreen initialized and locked")
+local revealStarted = false
 
 ----------------------------------------------------------------
 -- Function: revealPlayerName
@@ -181,12 +181,27 @@ local function revealGameStatusAndEnableJoin()
 end
 
 ----------------------------------------------------------------
+-- Function: startRevealSequence
+-- Призначення:
+--   Запускає детерміновану послідовність показу елементів (Sprint 1).
+-- Вхідні параметри:
+--   none
+-- Вихід / ефект:
+--   Поступово показує тексти і вмикає кнопку Join Game
+-- Хто використовує:
+--   onModeChanged (коли JoinScreen стає видимим)
+----------------------------------------------------------------
+local function startRevealSequence()
+  task.delay(0.5, revealPlayerName)
+  task.delay(1.0, revealPlayerStatus)
+  task.delay(1.5, revealGameStatusAndEnableJoin)
+end
+
+----------------------------------------------------------------
 -- Deterministic reveal sequence (Sprint 1)
 ----------------------------------------------------------------
 
-task.delay(0.5, revealPlayerName)
-task.delay(1.0, revealPlayerStatus)
-task.delay(1.5, revealGameStatusAndEnableJoin)
+-- Started lazily when the JoinScreen becomes visible
 
 ----------------------------------------------------------------
 -- Function: onJoinGameClicked
@@ -223,18 +238,30 @@ btnJoinGameButton.MouseButton1Click:Connect(onJoinGameClicked)
 ----------------------------------------------------------------
 local function onModeChanged()
 	local mode = player:GetAttribute("CurrentMode")
+  local shouldShow = (mode == nil or mode == "Join")
 
-	if mode == "Station" then
-		gui.Enabled = false
-		log:Info("UI", "JoinScreen hidden (Station entered)")
-	elseif mode == "Join" then
-		gui.Enabled = true
-		log:Info("UI", "JoinScreen shown (returned to Join)")
-	end
+  if shouldShow then
+    if not gui.Enabled then
+      gui.Enabled = true
+      log:Info("UI", "JoinScreen shown mode=%s", tostring(mode))
+    end
+
+    if not revealStarted then
+      revealStarted = true
+      startRevealSequence()
+    end
+    return
+  end
+
+  if gui.Enabled then
+    gui.Enabled = false
+    log:Info("UI", "JoinScreen hidden mode=%s", tostring(mode))
+  end
 end
 
 player:GetAttributeChangedSignal("CurrentMode"):Connect(onModeChanged)
+onModeChanged()
 
 ----------------------------------------------------------------
--- End of script: JoinScreenClient v1.2.4
+-- End of script: JoinScreenClient v1.2.5
 ----------------------------------------------------------------
