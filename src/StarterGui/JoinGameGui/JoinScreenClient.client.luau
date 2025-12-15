@@ -1,7 +1,7 @@
 --[[
     Тип: LocalScript
     Назва: JoinScreenClient
-  Версія: 1.2.6
+  Версія: 1.2.7
     Розміщення: StarterGui/JoinGameGui/JoinScreenClient
 
     Призначення:
@@ -9,7 +9,7 @@
       ЄДИНА точка входу гравця в гру.
 
     Загальна логіка:
-      1. GUI активний одразу після завантаження клієнта
+      1. GUI керується атрибутом CurrentMode (Join / Station)
       2. Поетапно відображає:
          - PlayerName
          - PlayerStatus
@@ -44,7 +44,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Logger = require(ReplicatedStorage.Shared.Logger)
 local GameEvents = require(ReplicatedStorage.Shared.GameEvents)
 
-local log = Logger.new("JoinScreenClient", "1.2.6")
+local log = Logger.new("JoinScreenClient", "1.2.7")
 
 ----------------------------------------------------------------
 -- Player / GUI resolution
@@ -54,6 +54,10 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local gui = playerGui:WaitForChild("JoinGameGui")
+
+-- Studio-first safety:
+-- do not rely on asset defaults; we always start hidden and then show based on CurrentMode.
+gui.Enabled = false
 
 ----------------------------------------------------------------
 -- Function: waitForDescendant
