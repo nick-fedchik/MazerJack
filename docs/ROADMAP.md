@@ -2,7 +2,7 @@
 
 Planned milestones:
 
-- Short term: Implement Station MVP services (StationService, LandingZone, RoundManager), basic tests, and replace direct `print` calls with `Logger` usage.
+- Short term: Station MVP core — Modules + Gateways, CommandModule spawn, gate locking/auto doors, station context tracking (module/gate), and basic tests.
 - Mid term: Scanner/Telescope systems, Energy economy, and round balancing.
 - Long term: Persistent economy, modular mission generation, and release candidate.
 
