@@ -19,8 +19,8 @@ Current shipped/dev baseline: **v2.1.0**
   - `ReplicatedStorage/Shared/Constants.luau` — all game constants
   - `ReplicatedStorage/Shared/Events.luau` — RemoteEvent management
   - `ReplicatedStorage/Shared/Logger.luau` — logging (preserved from v1)
-  - `ServerScriptService/GameServer.server.luau` — ALL server logic
-  - `StarterPlayerScripts/GameClient.client.luau` — ALL client logic
+  - `ServerScriptService/GameServer.luau` — ALL server logic
+  - `StarterPlayerScripts/GameClient.luau` — ALL client logic
 
 ### Architecture principles:
 - Single source of truth: `Player.CurrentMode` attribute
@@ -51,8 +51,8 @@ Current shipped/dev baseline: **v2.1.0**
 
 ### Files changed:
 - `Constants.luau` — added `IsNewPlayer` attribute, `Path` constants
-- `GameServer.server.luau` — profile loading, SpawnLocation discovery
-- `GameClient.client.luau` — profile display, avatar loading
+- `GameServer.luau` — profile loading, SpawnLocation discovery
+- `GameClient.luau` — profile display, avatar loading
 
 **Acceptance checklist (v2.1.0)**
 - [x] Player connects and sees JoinGameGui

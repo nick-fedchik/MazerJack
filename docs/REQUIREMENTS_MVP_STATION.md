@@ -12,8 +12,8 @@ The codebase follows a minimal architecture with clear separation:
 - `ReplicatedStorage/Shared/Constants.luau` — all constants (GameModes, Attributes, Paths)
 - `ReplicatedStorage/Shared/Events.luau` — RemoteEvent factory
 - `ReplicatedStorage/Shared/Logger.luau` — structured logging
-- `ServerScriptService/GameServer.server.luau` — ALL server logic
-- `StarterPlayerScripts/GameClient.client.luau` — ALL client logic
+- `ServerScriptService/GameServer.luau` — ALL server logic
+- `StarterPlayerScripts/GameClient.luau` — ALL client logic
 
 ### Key Contracts
 - **Single source of truth**: `Player.CurrentMode` attribute (Join | Station | Location)

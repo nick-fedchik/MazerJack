@@ -65,5 +65,5 @@
 ## Files
 
 - **Constants**: [Constants.luau](../src/ReplicatedStorage/Shared/Constants.luau)
-- **Server Logic**: [GameServer.server.luau](../src/ServerScriptService/GameServer.server.luau)
-- **Client Logic**: [GameClient.client.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.client.luau)
+- **Server Logic**: [GameServer.luau](../src/ServerScriptService/GameServer.luau)
+- **Client Logic**: [GameClient.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.luau)

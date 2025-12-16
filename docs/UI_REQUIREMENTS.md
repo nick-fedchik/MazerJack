@@ -31,7 +31,7 @@ Create a ScreenGui named "JoinGameGui" with:
 | `StatusLabel` | TextLabel | "Новий дослідник" або "Досвідчений мандрівник" |
 | `JoinButton` | TextButton | Кнопка входу в гру → `JoinGame` RemoteEvent |
 
-**Логіка (GameClient.client.luau):**
+**Логіка (GameClient.luau):**
 - Показується коли `CurrentMode == "Join"`
 - `AvatarImage` заповнюється через `rbxthumb://type=AvatarHeadShot&id={UserId}&w=150&h=150`
 - `NicknameLabel` = `player.DisplayName`
@@ -65,7 +65,7 @@ Create a ScreenGui named "StationGui" with:
 | `BottomPanel` | Frame | Нижня панель з діями |
 | `GoToLocationButton` | TextButton | Перехід на планету → `GoToLocation` RemoteEvent |
 
-**Логіка (GameClient.client.luau):**
+**Логіка (GameClient.luau):**
 - Показується коли `CurrentMode == "Station"`
 - Гравець фізично знаходиться на космічній станції
 - Кнопка "НА ПЛАНЕТУ" переводить в режим Location
@@ -96,7 +96,7 @@ Create a ScreenGui named "LocationGui" with:
 | `ReturnButton` | TextButton | Повернення на станцію → `ReturnToStation` RemoteEvent |
 | `ExitButton` | TextButton | Вихід з гри → `ExitGame` RemoteEvent |
 
-**Логіка (GameClient.client.luau):**
+**Логіка (GameClient.luau):**
 - Показується коли `CurrentMode == "Location"`
 - Гравець фізично знаходиться на планетній локації
 - Кнопка "НА СТАНЦІЮ" повертає в режим Station
@@ -120,7 +120,7 @@ Inside CommandModule, add a SpawnLocation part named "SpawnLocation"
 
 **Призначення:**
 - Точка спавну гравців після натискання "ПРИЄДНАТИСЯ"
-- Використовується в `GameServer.server.luau` функцією `findSpawnLocation()`
+- Використовується в `GameServer.luau` функцією `findSpawnLocation()`
 - Шлях визначений в `Constants.Path.SpawnLocation`
 
 ---
@@ -141,7 +141,7 @@ Inside CommandModule, add a SpawnLocation part named "SpawnLocation"
 
 ### Enabled = false
 - Всі ScreenGui мають бути `Enabled = false` за замовчуванням
-- Видимість контролюється через `GameClient.client.luau`
+- Видимість контролюється через `GameClient.luau`
 
 ---
 
@@ -162,6 +162,6 @@ Inside CommandModule, add a SpawnLocation part named "SpawnLocation"
 
 ## Файли коду
 
-- **Клієнт:** [GameClient.client.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.client.luau)
-- **Сервер:** [GameServer.server.luau](../src/ServerScriptService/GameServer.server.luau)
+- **Клієнт:** [GameClient.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.luau)
+- **Сервер:** [GameServer.luau](../src/ServerScriptService/GameServer.luau)
 - **Константи:** [Constants.luau](../src/ReplicatedStorage/Shared/Constants.luau)

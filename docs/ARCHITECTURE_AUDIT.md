@@ -1,12 +1,12 @@
 ﻿# Architecture Audit (code v2.1 snapshot)
 
 ## Scope
-- Reviewed: src/ServerScriptService/GameServer.server.luau, src/StarterPlayer/StarterPlayerScripts/GameClient.client.luau, src/ReplicatedStorage/Shared/{Constants.luau,Events.luau,Logger.luau}
+- Reviewed: src/ServerScriptService/GameServer.luau, src/StarterPlayer/StarterPlayerScripts/GameClient.luau, src/ReplicatedStorage/Shared/{Constants.luau,Events.luau,Logger.luau}
 - Goal: assess architecture shape, complexity, and consistency across server/client/shared scripts.
 
 ## Architecture Shape
-- Server (GameServer.server.luau): event-driven flow; creates RemoteEvents (via Events.Init), sets player attributes CurrentMode/IsNewPlayer, mock profile store in-memory; guards mode on remotes; spawns at Path.SpawnLocation then sets mode to Station; GoToLocation/ReturnToStation only flip mode; Exit destroys character and resets to Join.
-- Client (GameClient.client.luau): waits for Events folder, wires GUI buttons to remotes, toggles Join/Station/Location GUIs based on CurrentMode, populates Join screen with display name/avatar/status, listens to attribute changes to refresh GUI.
+- Server (GameServer.luau): event-driven flow; creates RemoteEvents (via Events.Init), sets player attributes CurrentMode/IsNewPlayer, mock profile store in-memory; guards mode on remotes; spawns at Path.SpawnLocation then sets mode to Station; GoToLocation/ReturnToStation only flip mode; Exit destroys character and resets to Join.
+- Client (GameClient.luau): waits for Events folder, wires GUI buttons to remotes, toggles Join/Station/Location GUIs based on CurrentMode, populates Join screen with display name/avatar/status, listens to attribute changes to refresh GUI.
 - Shared: Constants centralize mode/attribute/remote/path strings and game version; Events creates/looks up RemoteEvents; Logger is shared print/warn wrapper (v1.2.0 while code is labeled 2.1.x).
 
 ## Complexity Assessment
