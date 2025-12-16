@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Rojo-safe check: ensure the project can build before committing.
+# Enable with:
+#   git config core.hooksPath .githooks
+
+# Only run when relevant files are staged.
+if ! git diff --cached --name-only | grep -E '^(src/|default\.project\.json|sourcemap\.json)' >/dev/null 2>&1; then
+  exit 0
+fi
+
+if ! command -v rojo >/dev/null 2>&1; then
+  echo "[pre-commit] rojo is not installed or not on PATH. Install Rojo or disable this hook." >&2
+  echo "[pre-commit] Hint: winget install rojo" >&2
+  exit 1
+fi
+
+echo "[pre-commit] Running: rojo build default.project.json -o build.rbxlx" >&2
+rojo build default.project.json -o build.rbxlx

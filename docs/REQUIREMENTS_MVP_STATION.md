@@ -4,6 +4,65 @@
 
 Goal: deliver a small, playable vertical-slice focused on the Stellar Station (no planet flight yet). Players can join, spawn on the Station, move between modules, interact with automatic doors, and have persistent profile data (credits, knowledge tree, upgrades) saved at checkpoints.
 
+## Architecture (v2.x)
+
+The codebase follows a minimal architecture with clear separation:
+
+### Code Structure (5 files)
+- `ReplicatedStorage/Shared/Constants.luau` — all constants (GameModes, Attributes, Paths)
+- `ReplicatedStorage/Shared/Events.luau` — RemoteEvent factory
+- `ReplicatedStorage/Shared/Logger.luau` — structured logging
+- `ServerScriptService/GameServer.luau` — ALL server logic
+- `StarterPlayerScripts/GameClient.luau` — ALL client logic
+
+### Key Contracts
+- **Single source of truth**: `Player.CurrentMode` attribute (Join | Station | Location)
+- **Player profile**: `Player.IsNewPlayer` attribute (true for first-time players)
+- **State transitions**: Only server can change `CurrentMode`
+- **GUI visibility**: Determined entirely by `CurrentMode` value
+
+### Join Flow (v2.1.0)
+1. Player connects → Server loads profile
+2. Server sets `IsNewPlayer` and `CurrentMode = "Join"`
+3. Client displays JoinGameGui with:
+   - Player nickname (`player.DisplayName`)
+   - Player avatar (from `Players:GetUserThumbnailAsync`)
+   - Status: "New Player" or "Experienced"
+4. Click "Join Game" → Client sends `JoinGame` RemoteEvent
+5. Server finds `SpawnLocation` at `Workspace/StellarStation/Modules/CommandModule/SpawnLocation`
+6. Server calls `player:LoadCharacter()` with `RespawnLocation` set
+7. Server sets `CurrentMode = "Station"`
+8. Client hides JoinGameGui, shows StationGui
+
+## Station structure (Modules + Gateways)
+
+This section is authoritative for how the Stellar Station is physically organized.
+
+- **Modules**
+  - A Module is a **hermetic** room/volume.
+  - Geometry: **cube** or **parallelepiped**.
+  - Some modules will later include **viewports/illuminators** that let the player see space and the nearby Planet.
+  - There is normal gravity. A **Gravity Regulator** exists somewhere at the bottom of the station; it is **always working** and requires no gameplay resources.
+
+- **Gateways (connectors / gates)**
+  - Modules connect through Gateways.
+  - A Gateway may have **2, 3, or 4 doors**.
+  - Default Gateway: **2 doors facing each other**.
+  - A Gateway is a **cube** whose walls comfortably fit its doors.
+  - Door height: **20% taller than typical player height**.
+  - Doors are either:
+    - **Locked/disabled** for unbuilt modules or modules forbidden by game logic ("Gate is Locked" state), or
+    - **Automatic** (open/close behavior).
+
+- **Command Module (first / main module)**
+  - The primary spawn for Station is in `CommandModule`.
+  - A `SpawnLocation` is placed **on the floor in the center** of the Command Module.
+
+- **Rojo workspace mapping (current repo convention)**
+  - `Workspace/StellarStation/Modules/<ModuleName>`
+  - `Workspace/StellarStation/Gateways/<GatewayName>`
+  - `Workspace/StellarStation/Modules/CommandModule/SpawnLocation`
+
 ## Primary Goals (first release)
 
 - Scalable, well-logged architecture with clear state tracking.
@@ -19,6 +78,9 @@ Goal: deliver a small, playable vertical-slice focused on the Stellar Station (n
 
 - Player can log in, spawn, walk between connected modules, and exit.
 - Doors animate open/close automatically; access denied modules block movement and log attempts.
+- While in `Station` state, server tracks and exposes the player's current station context:
+  - `CurrentStationModule` (string)
+  - `CurrentStationGate` (string)
 - Checkpoint saves and loads player profile with credits and knowledge tree.
 - All gameplay-affecting services emit structured logs and have basic tests/mocks.
 - Simple Stellar Station Control Panel UI exists with status indicators (gravity ok, engine offline, scanner idle).

@@ -1,7 +1,7 @@
 --[[
     Тип скрипта: ModuleScript
     Назва: Logger
-    Версія: 1.2.0
+    Версія: 2.1.0
     Розміщення: ReplicatedStorage/Shared/Logger
 
     Призначення:
