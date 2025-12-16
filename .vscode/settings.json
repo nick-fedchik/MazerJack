@@ -6,5 +6,6 @@
             "args": ["--login", "-i"]
         }
     },
-    "argon.verbose": true
+    "argon.verbose": true,
+    "chatgpt.openOnStartup": true
 }
