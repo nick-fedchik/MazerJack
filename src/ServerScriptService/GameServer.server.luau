@@ -56,18 +56,65 @@ local RemoteEvent = Constants.RemoteEvent
 local Path = Constants.Path
 
 ----------------------------------------------------------------
--- Player Profile Storage (Mock for MVP)
+-- DataStore
 ----------------------------------------------------------------
+
+local DataStoreService = game:GetService("DataStoreService")
+local RunService = game:GetService("RunService")
+
+--[[
+    DATASTORE_KEY_PREFIX
+    Призначення:
+      Префікс для ключів гравців в DataStore.
+--]]
+local DATASTORE_KEY_PREFIX = "Player_"
+
+--[[
+    TRANSITION_COOLDOWN
+    Призначення:
+      Мінімальний час між переходами станів (секунди).
+      Захищає від спаму RemoteEvents.
+--]]
+local TRANSITION_COOLDOWN = 1.0
+
+--[[
+    playerDataStore
+    Призначення:
+      DataStore для збереження профілів гравців.
+      В Studio використовується mock-режим.
+--]]
+local playerDataStore: DataStore?
+local isStudio = RunService:IsStudio()
+
+if not isStudio then
+	local success, result = pcall(function()
+		return DataStoreService:GetDataStore("MazerJackPlayerData_v1")
+	end)
+	if success then
+		playerDataStore = result
+		log:Info("DataStore", "DataStore initialized successfully")
+	else
+		log:Warn("DataStore", "Failed to get DataStore: %s", tostring(result))
+	end
+else
+	log:Info("DataStore", "Running in Studio - using mock DataStore")
+end
 
 --[[
     playerProfiles
     Призначення:
-      Тимчасове сховище профілів гравців (mock замість DataStore).
-      Для MVP: всі гравці вважаються новими при кожному запуску.
-    
-    TODO: Замінити на DataStoreService для persistence.
+      Кеш профілів гравців в пам'яті.
+      Синхронізується з DataStore при load/save.
 --]]
 local playerProfiles: { [number]: { isNew: boolean } } = {}
+
+--[[
+    lastTransitionTime
+    Призначення:
+      Трекер останнього часу переходу для кожного гравця.
+      Використовується для cooldown захисту.
+--]]
+local lastTransitionTime: { [number]: number } = {}
 
 ----------------------------------------------------------------
 -- Helper Functions: Profile
@@ -76,59 +123,131 @@ local playerProfiles: { [number]: { isNew: boolean } } = {}
 --[[
     loadPlayerProfile(player)
     Призначення:
-      Завантажує профіль гравця з сховища.
-      Для MVP: завжди повертає новий профіль.
+      Завантажує профіль гравця з DataStore.
+      Використовує кеш та retry logic.
 
     Вхідні параметри:
       player (Player) — гравець
 
     Вихід:
       { isNew: boolean } — профіль гравця
-
-    TODO: Інтегрувати з DataStoreService.
 --]]
 local function loadPlayerProfile(player: Player): { isNew: boolean }
 	local userId = player.UserId
+	local key = DATASTORE_KEY_PREFIX .. tostring(userId)
 	
-	-- Перевіряємо чи вже є профіль в пам'яті
+	-- Перевіряємо кеш
 	if playerProfiles[userId] then
-		log:Info("loadPlayerProfile", "%s: Existing profile loaded", player.Name)
+		log:Info("loadPlayerProfile", "%s: Profile loaded from cache", player.Name)
 		return playerProfiles[userId]
 	end
 	
-	-- TODO: Тут буде DataStore:GetAsync()
-	-- Для MVP: всі нові
-	local profile = {
-		isNew = true,
-	}
+	-- Профіль за замовчуванням (новий гравець)
+	local profile = { isNew = true }
+	
+	-- Завантажуємо з DataStore (тільки не в Studio)
+	if playerDataStore then
+		local MAX_RETRIES = 3
+		for attempt = 1, MAX_RETRIES do
+			local success, result = pcall(function()
+				return playerDataStore:GetAsync(key)
+			end)
+			
+			if success then
+				if result then
+					profile = result
+					log:Info("loadPlayerProfile", "%s: Profile loaded from DataStore (isNew=%s)", 
+						player.Name, tostring(profile.isNew))
+				else
+					log:Info("loadPlayerProfile", "%s: No saved profile, creating new", player.Name)
+				end
+				break
+			else
+				log:Warn("loadPlayerProfile", "%s: DataStore read failed (attempt %d/%d): %s", 
+					player.Name, attempt, MAX_RETRIES, tostring(result))
+				if attempt < MAX_RETRIES then
+					task.wait(1)
+				end
+			end
+		end
+	else
+		log:Info("loadPlayerProfile", "%s: Studio mode - new profile created", player.Name)
+	end
 	
 	playerProfiles[userId] = profile
-	log:Info("loadPlayerProfile", "%s: New profile created (MVP mock)", player.Name)
-	
 	return profile
 end
 
 --[[
     savePlayerProfile(player)
     Призначення:
-      Зберігає профіль гравця.
-      Для MVP: оновлює isNew на false.
+      Зберігає профіль гравця в DataStore.
+      Оновлює isNew на false після першого Join.
+
+    Вхідні параметри:
+      player (Player) — гравець
+--]]
+local function savePlayerProfile(player: Player)
+	local userId = player.UserId
+	local key = DATASTORE_KEY_PREFIX .. tostring(userId)
+	
+	if not playerProfiles[userId] then
+		log:Warn("savePlayerProfile", "%s: No profile in cache to save", player.Name)
+		return
+	end
+	
+	-- Оновлюємо isNew
+	playerProfiles[userId].isNew = false
+	
+	-- Зберігаємо в DataStore
+	if playerDataStore then
+		local MAX_RETRIES = 3
+		for attempt = 1, MAX_RETRIES do
+			local success, err = pcall(function()
+				playerDataStore:SetAsync(key, playerProfiles[userId])
+			end)
+			
+			if success then
+				log:Info("savePlayerProfile", "%s: Profile saved to DataStore", player.Name)
+				return
+			else
+				log:Warn("savePlayerProfile", "%s: DataStore write failed (attempt %d/%d): %s", 
+					player.Name, attempt, MAX_RETRIES, tostring(err))
+				if attempt < MAX_RETRIES then
+					task.wait(1)
+				end
+			end
+		end
+	else
+		log:Info("savePlayerProfile", "%s: Studio mode - profile cached (isNew = false)", player.Name)
+	end
+end
+
+--[[
+    canTransition(player)
+    Призначення:
+      Перевіряє чи минув cooldown з останнього переходу.
+      Захищає від спаму RemoteEvents.
 
     Вхідні параметри:
       player (Player) — гравець
 
-    TODO: Інтегрувати з DataStoreService.
+    Вихід:
+      boolean — true якщо перехід дозволений
 --]]
-local function savePlayerProfile(player: Player)
+local function canTransition(player: Player): boolean
 	local userId = player.UserId
+	local now = tick()
 	
-	if playerProfiles[userId] then
-		-- Після першого Join гравець вже не новий
-		playerProfiles[userId].isNew = false
-		log:Info("savePlayerProfile", "%s: Profile saved (isNew = false)", player.Name)
+	local lastTime = lastTransitionTime[userId] or 0
+	if now - lastTime < TRANSITION_COOLDOWN then
+		log:Warn("canTransition", "%s: Transition blocked (cooldown %.1fs remaining)", 
+			player.Name, TRANSITION_COOLDOWN - (now - lastTime))
+		return false
 	end
 	
-	-- TODO: Тут буде DataStore:SetAsync()
+	lastTransitionTime[userId] = now
+	return true
 end
 
 ----------------------------------------------------------------
@@ -284,6 +403,14 @@ local function onPlayerRemoving(player: Player)
 	
 	-- Зберігаємо профіль
 	savePlayerProfile(player)
+	
+	-- Очищаємо кеш
+	local userId = player.UserId
+	task.delay(5, function()
+		playerProfiles[userId] = nil
+		lastTransitionTime[userId] = nil
+		log:Info("onPlayerRemoving", "Cleaned up cache for UserId: %d", userId)
+	end)
 end
 
 --[[
@@ -296,6 +423,11 @@ end
       4. Оновлює профіль (більше не новий)
 --]]
 local function onJoinGame(player: Player)
+	-- Cooldown check
+	if not canTransition(player) then
+		return
+	end
+	
 	local currentMode = getPlayerMode(player)
 	
 	if currentMode ~= GameMode.Join then
@@ -323,6 +455,11 @@ end
       Доступно тільки з режиму Station.
 --]]
 local function onGoToLocation(player: Player)
+	-- Cooldown check
+	if not canTransition(player) then
+		return
+	end
+	
 	local currentMode = getPlayerMode(player)
 	
 	if currentMode ~= GameMode.Station then
@@ -343,6 +480,11 @@ end
       Доступно тільки з режиму Location.
 --]]
 local function onReturnToStation(player: Player)
+	-- Cooldown check
+	if not canTransition(player) then
+		return
+	end
+	
 	local currentMode = getPlayerMode(player)
 	
 	if currentMode ~= GameMode.Location then
@@ -366,6 +508,11 @@ end
       Видаляє персонажа і повертає в режим Join.
 --]]
 local function onExitGame(player: Player)
+	-- Cooldown check
+	if not canTransition(player) then
+		return
+	end
+	
 	log:Info("onExitGame", "%s is exiting game", player.Name)
 	
 	-- Зберігаємо профіль перед виходом
