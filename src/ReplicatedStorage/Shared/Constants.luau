@@ -55,11 +55,18 @@ Constants.Attribute = {
     RemoteEvent
     Призначення:
       Назви RemoteEvents для комунікації Client ↔ Server.
+    
+    Потік переходів:
+      Join → Station: JoinGame
+      Station → Location: GoToLocation
+      Location → Station: ReturnToStation
+      Any → Join: ExitGame
 --]]
 Constants.RemoteEvent = {
-	JoinGame = "JoinGame",         -- Client → Server: гравець натиснув Join
-	GoToLocation = "GoToLocation", -- Client → Server: гравець хоче на локацію
-	ExitGame = "ExitGame",         -- Client → Server: гравець виходить
+	JoinGame = "JoinGame",               -- Client → Server: гравець натиснув Join (Join → Station)
+	GoToLocation = "GoToLocation",       -- Client → Server: гравець хоче на локацію (Station → Location)
+	ReturnToStation = "ReturnToStation", -- Client → Server: гравець повертається на станцію (Location → Station)
+	ExitGame = "ExitGame",               -- Client → Server: гравець виходить з гри (Any → Join)
 }
 
 ----------------------------------------------------------------

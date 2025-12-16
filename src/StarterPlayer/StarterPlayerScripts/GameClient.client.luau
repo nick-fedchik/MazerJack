@@ -61,6 +61,7 @@ local RemoteEvent = Constants.RemoteEvent
 
 local joinGameGui: ScreenGui? = nil
 local stationGui: ScreenGui? = nil
+local locationGui: ScreenGui? = nil
 
 ----------------------------------------------------------------
 -- Helper Functions: GUI Search
@@ -293,7 +294,8 @@ local function updateGuiVisibility()
 	-- Station GUI: видимий тільки в режимі Station
 	setGuiEnabled(stationGui, mode == GameMode.Station)
 	
-	-- Location GUI: TODO (поки немає)
+	-- Location GUI: видимий тільки в режимі Location
+	setGuiEnabled(locationGui, mode == GameMode.Location)
 end
 
 ----------------------------------------------------------------
@@ -319,7 +321,7 @@ end
 --[[
     onGoLocationButtonClick()
     Призначення:
-      Обробляє клік на кнопку "Go to Location".
+      Обробляє клік на кнопку "Go to Location" (Station → Location).
 --]]
 local function onGoLocationButtonClick()
 	log:Info("onGoLocationButtonClick", "Go Location button clicked")
@@ -329,6 +331,22 @@ local function onGoLocationButtonClick()
 		goEvent:FireServer()
 	else
 		log:Error("onGoLocationButtonClick", "GoToLocation event not found")
+	end
+end
+
+--[[
+    onReturnToStationButtonClick()
+    Призначення:
+      Обробляє клік на кнопку "Return to Station" (Location → Station).
+--]]
+local function onReturnToStationButtonClick()
+	log:Info("onReturnToStationButtonClick", "Return to Station button clicked")
+	
+	local returnEvent = Events.Get(RemoteEvent.ReturnToStation)
+	if returnEvent then
+		returnEvent:FireServer()
+	else
+		log:Error("onReturnToStationButtonClick", "ReturnToStation event not found")
 	end
 end
 
@@ -422,6 +440,44 @@ local function setupStationGui()
 	stationGui.Enabled = false
 end
 
+--[[
+    setupLocationGui()
+    Призначення:
+      Налаштовує LocationGui та підключає обробники кнопок.
+      LocationGui показується коли гравець на планетній локації.
+--]]
+local function setupLocationGui()
+	locationGui = playerGui:WaitForChild("LocationGui", 10) :: ScreenGui?
+	
+	if not locationGui then
+		log:Warn("setupLocationGui", "LocationGui not found (will be created later)")
+		return
+	end
+	
+	log:Info("setupLocationGui", "LocationGui found")
+	
+	-- Кнопка Return to Station (Location → Station)
+	local returnButton = findButton(locationGui, 
+		"ReturnToStationButton", "ReturnButton", "BackToStationButton", "StationButton")
+	
+	if returnButton then
+		returnButton.Activated:Connect(onReturnToStationButtonClick)
+		log:Info("setupLocationGui", "ReturnToStation button connected: %s", returnButton.Name)
+	end
+	
+	-- Кнопка Exit (Location → Join)
+	local exitButton = findButton(locationGui, 
+		"ExitButton", "ExitGameButton")
+	
+	if exitButton then
+		exitButton.Activated:Connect(onExitButtonClick)
+		log:Info("setupLocationGui", "Exit button connected: %s", exitButton.Name)
+	end
+	
+	-- Початково ховаємо
+	locationGui.Enabled = false
+end
+
 ----------------------------------------------------------------
 -- Attribute Change Listeners
 ----------------------------------------------------------------
@@ -478,6 +534,7 @@ local function init()
 	-- Налаштовуємо GUI
 	setupJoinGui()
 	setupStationGui()
+	setupLocationGui()
 	
 	-- Підключаємо слухачів змін атрибутів
 	setupModeListener()

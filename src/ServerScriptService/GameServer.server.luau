@@ -319,7 +319,8 @@ end
 --[[
     onGoToLocation(player)
     Призначення:
-      Обробляє запит гравця на перехід до локації.
+      Обробляє запит гравця на перехід до локації (планети).
+      Доступно тільки з режиму Station.
 --]]
 local function onGoToLocation(player: Player)
 	local currentMode = getPlayerMode(player)
@@ -329,10 +330,33 @@ local function onGoToLocation(player: Player)
 		return
 	end
 	
-	log:Info("onGoToLocation", "%s is going to location", player.Name)
+	log:Info("onGoToLocation", "%s is going to location (Station → Location)", player.Name)
 	
-	-- TODO: Телепортувати на локацію
+	-- TODO: Телепортувати на локацію, сховати Station
 	setPlayerMode(player, GameMode.Location)
+end
+
+--[[
+    onReturnToStation(player)
+    Призначення:
+      Обробляє запит гравця на повернення на космічну станцію.
+      Доступно тільки з режиму Location.
+--]]
+local function onReturnToStation(player: Player)
+	local currentMode = getPlayerMode(player)
+	
+	if currentMode ~= GameMode.Location then
+		log:Warn("onReturnToStation", "%s tried to return to station but is in mode: %s", player.Name, tostring(currentMode))
+		return
+	end
+	
+	log:Info("onReturnToStation", "%s is returning to station (Location → Station)", player.Name)
+	
+	-- TODO: Телепортувати назад на станцію, показати Station
+	-- Спавнимо на станції
+	spawnPlayerAtStation(player)
+	
+	setPlayerMode(player, GameMode.Station)
 end
 
 --[[
@@ -395,6 +419,12 @@ local function init()
 	if goLocationEvent then
 		goLocationEvent.OnServerEvent:Connect(onGoToLocation)
 		log:Info("init", "GoToLocation event connected")
+	end
+	
+	local returnToStationEvent = Events.Get(RemoteEvent.ReturnToStation)
+	if returnToStationEvent then
+		returnToStationEvent.OnServerEvent:Connect(onReturnToStation)
+		log:Info("init", "ReturnToStation event connected")
 	end
 	
 	local exitEvent = Events.Get(RemoteEvent.ExitGame)
