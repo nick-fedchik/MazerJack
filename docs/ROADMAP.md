@@ -5,171 +5,149 @@ This roadmap uses semantic-ish versions:
 - **Minor** ($x.Y.0$): a coherent playable increment (new service, new gameplay loop slice, new UI surface).
 - **Major** ($X.0.0$): large milestone / release-candidate level changes.
 
-Current shipped/dev baseline: **v1.2.2**
+Current shipped/dev baseline: **v2.1.0**
 
 ---
 
-## v1.2.x — Station MVP hardening (short-term)
+## v2.0.0 — Clean Architecture Rewrite (COMPLETED)
 
-### v1.2.3
-- Stabilize and document the current Station structure conventions:
-	- `Workspace/StellarStation/Modules/<ModuleName>`
-	- `Workspace/StellarStation/Gateways/<GatewayName>`
-	- `CommandModule/SpawnLocation`
-- Make `LocationsConfig` explicitly “unused for MVP” in docs and keep header/footer versions consistent.
-- Ensure server boot logs the title/version once (source of truth: `GameConfig`).
+**BREAKING CHANGE**: Complete architecture rewrite from 28 files to 5 files.
 
-### v1.2.4
-- Gate model contract: each gateway model may have `GateLocked` boolean attribute.
-- Log gate entry attempts consistently from server (locked/unlocked).
-- Minimal door behavior integration point (no new UX): door logic reads `GateLocked` and denies movement/opens accordingly.
+### What was done:
+- Archived old v1.x code to `archived/v1_code/`
+- New minimal architecture:
+  - `ReplicatedStorage/Shared/Constants.luau` — all game constants
+  - `ReplicatedStorage/Shared/Events.luau` — RemoteEvent management
+  - `ReplicatedStorage/Shared/Logger.luau` — logging (preserved from v1)
+  - `ServerScriptService/GameServer.server.luau` — ALL server logic
+  - `StarterPlayerScripts/GameClient.client.luau` — ALL client logic
 
-### v1.2.5
-- Add a tiny Studio-only test runner and keep it green:
-	- `GameStateMachine` contracts (transition sets `CurrentMode`, lock blocks re-entrant transitions).
-	- `StationContextService` contracts (module/gate attributes, `GateLocked` defaults).
-- Add a basic “playtest checklist” section to docs (spawn, join, gate logging, station context attrs).
-
-### v1.2.6
-- Rojo-safe automation:
-	- VS Code build task is the default build task.
-	- Optional pre-commit hook runs `rojo build` for relevant staged files.
-- CI-ready note (even if CI isn’t configured yet): “what command to run to validate”.
-
-**Exit criteria for v1.2.x**
-- Join → Station spawn is reliable.
-- Station context attributes work in Station mode:
-	- `CurrentStationModule`
-	- `CurrentStationGate`
-- Gate entry logs include `GateLocked` state.
-- Rojo build is stable and reproducible.
+### Architecture principles:
+- Single source of truth: `Player.CurrentMode` attribute
+- Server controls all state transitions
+- Client only sends RemoteEvents and updates GUI visibility
+- No complex FSM, Services, or Handlers — direct code
 
 ---
 
-## v1.3.0 — Station navigation slice (still no planets)
+## v2.1.0 — Join Flow with Player Profile (CURRENT)
 
-Goal: more “station feel” without adding the planet/location loop yet.
+### Implemented:
+- Player profile loading (New/Experienced detection)
+- `Player.IsNewPlayer` attribute for GUI status display
+- SpawnLocation discovery in `CommandModule`
+- Profile display in JoinGameGui (nickname, avatar, status)
+- Join → Station spawn flow
 
-- Introduce a minimal `StationService` (authoritative module/gate metadata):
-	- module list + gateway list
-	- locked/unlocked rules in one place
-- Door integration uses `StationService` as the single source of truth.
-- Add at least one more module besides `CommandModule` (e.g. `HallModule`) + one gateway connecting them.
-- Expand tests:
-	- `StationService` access rules
-	- door lock decision logic (pure function / small mockable surface)
+### Join Flow:
+1. Player connects
+2. Server loads profile (mock DataStore for MVP)
+3. Server sets `IsNewPlayer` and `CurrentMode = "Join"`
+4. Client shows JoinGameGui with player profile (name, avatar, status)
+5. Player clicks "Join Game" button
+6. Server finds SpawnLocation in CommandModule
+7. Server spawns player and sets `CurrentMode = "Station"`
+8. Client hides JoinGameGui, shows StationGui
 
-**Acceptance checklist (v1.3.0)**
-- Player can move CommandModule → another module through a gateway.
-- Locked gateways reliably deny access and log the attempt.
-- Unlocked gateways allow passage and still log entry attempts.
-- `StationService` is the single source of truth for module/gate metadata (no duplicated rules).
-- `DoorService` behavior is consistent with `StationService` lock state.
-- Server exposes correct station context attributes while in Station:
-	- `CurrentStationModule`
-	- `CurrentStationGate`
-- At least one automated test covers access/lock decision logic.
+### Files changed:
+- `Constants.luau` — added `IsNewPlayer` attribute, `Path` constants
+- `GameServer.server.luau` — profile loading, SpawnLocation discovery
+- `GameClient.client.luau` — profile display, avatar loading
 
----
-
-## v1.4.0 — Station consoles: Scanner/Telescope placeholders
-
-Goal: introduce the “systems panel” loop with minimal gameplay weight.
-
-- Add basic “Control Panel” interaction points (server-authoritative, client UI minimal).
-- Scanner:
-	- battery/energy placeholder values
-	- “scan request” event flow (rate limited)
-- Telescope:
-	- shows known planets/locations (still mostly static data)
-
-**Acceptance checklist (v1.4.0)**
-- Player can interact with a Station “Control Panel” surface without errors.
-- Scanner “scan request” flow works end-to-end (client request → server validate → server response).
-- Scan requests are rate limited (spam doesn’t flood logs/remotes).
-- Scanner exposes a visible battery/energy value (even if placeholder).
-- Telescope UI shows the current known planet/location list from config/data.
-- All interactions produce structured logs (no silent failures).
-- At least one automated test covers scan request validation/rate limiting.
+**Acceptance checklist (v2.1.0)**
+- [x] Player connects and sees JoinGameGui
+- [x] JoinGameGui shows player nickname (DisplayName)
+- [x] JoinGameGui shows player avatar (from Roblox API)
+- [x] JoinGameGui shows player status (New Player / Experienced)
+- [x] Click "Join Game" spawns player on SpawnLocation
+- [x] After spawn, StationGui is visible, JoinGameGui is hidden
+- [ ] SpawnLocation exists in `Workspace/StellarStation/Modules/CommandModule`
 
 ---
 
-## v1.5.0 — Persistence expansion (profile + checkpoint contracts)
+## v2.2.0 — Station Structure (next)
 
-Goal: persistence becomes meaningful beyond “exists”.
+Goal: Create basic Station structure in Workspace.
 
-- Expand `PersistenceService` schema gradually (still Studio-safe):
-	- credits
-	- knowledge tree stub
-	- last checkpoint contract (Station/Location)
-- Add schema migration notes (documented expectations; migrations can still be manual for MVP).
+### Planned:
+- CommandModule with SpawnLocation
+- Basic Gateway placeholder
+- Station environment (lighting, skybox)
 
-**Acceptance checklist (v1.5.0)**
-- Player profile loads with defaults when no prior data exists.
-- Credits and knowledge stub persist across sessions (in production; Studio remains safe/no-crash).
-- `LastCheckpoint` is saved/loaded and has a clear Station/Location contract.
-- Schema version is tracked and documented; upgrading doesn’t brick existing saves.
-- Save is triggered at an explicit checkpoint event (not every frame/heartbeat).
-- Failures are logged with actionable context (userId, schemaVersion, operation).
-- At least one automated test validates default state + schema version behavior.
+**Acceptance checklist (v2.2.0)**
+- [ ] `Workspace/StellarStation` structure exists
+- [ ] `CommandModule` with proper geometry
+- [ ] `SpawnLocation` in CommandModule center
+- [ ] Player spawns inside CommandModule
+- [ ] Basic lighting/atmosphere for space environment
 
 ---
 
-## v1.6.0 — Locations MVP (first minimal planet/location loop)
+## v2.3.0 — Exit Flow
 
-Goal: one discoverable location loop, with Station world hidden while on location.
+Goal: Complete the game loop with Exit functionality.
 
-- Basic travel Station ↔ Location (no shuttle).
-- Location structure:
-	- `LandingZone` with `SpawnLocation`
-	- `ExplorationZone` / labyrinth placeholder
-- Minimal “Round” lifecycle (timer + failure consequence) as described in requirements.
+### Planned:
+- Exit button removes character
+- Returns to Join mode
+- Profile save on exit
 
-**Acceptance checklist (v1.6.0)**
-- Player can travel Station → Location and back using the intended MVP flow.
-- Only one scene is visible/active at a time (Station hidden while on Location).
-- Location has `LandingZone/SpawnLocation` and player spawns there on arrival.
-- Player can perform `Check In` and it updates persisted `LastCheckpoint`.
-- Round can start, runs a timer, and ends deterministically.
-- If player is inside exploration at round end, the failure consequence triggers (death/respawn + loss since last check-in).
-- At least one automated test validates the state transition + checkpoint contract.
+**Acceptance checklist (v2.3.0)**
+- [ ] Click "Exit Game" in StationGui
+- [ ] Character is removed
+- [ ] JoinGameGui becomes visible again
+- [ ] Player can re-join without reload
 
 ---
 
-## v1.7.0 — Economy + balancing pass
+## v2.4.0 — Persistence (DataStore)
 
-- Credits and reward sources become consistent.
-- Scanner/Telescope upgrades consume resources/knowledge.
-- Tuning and guardrails (anti-grind, basic caps).
+Goal: Replace mock profile with real DataStore.
 
-**Acceptance checklist (v1.7.0)**
-- Credits are earned from at least one defined gameplay source and logged.
-- Credits spending/upgrades have server-side validation (no client-authoritative edits).
-- Scanner/Telescope upgrades consume both resources/knowledge as designed.
-- Economy values are sourced from config (not scattered magic numbers).
-- Basic caps/limits exist to prevent runaway accumulation in MVP.
-- Persistence correctly saves/loads economy-related fields.
-- At least one automated test validates a core economy rule (earn/spend/cap).
+### Planned:
+- DataStoreService integration
+- Profile schema (isNew, credits, lastCheckpoint)
+- Save/load with error handling
 
----
-
-## v2.0.0 — Release candidate goals (long-term)
-
-- Stable save/load behavior in production.
-- Clear, test-backed state machine contracts across Join/Station/Location.
-- Minimal content pipeline: add modules/gates/locations without rewriting core code.
-
-**Acceptance checklist (v2.0.0)**
-- A new module/gateway can be added via Workspace structure + metadata with minimal/no code changes.
-- State machine transitions across Join/Station/Location are covered by tests and stable under retry/race.
-- Save/load works reliably in production environments; failures are observable and recoverable.
-- Rojo build is reproducible and part of the standard verification flow.
-- Core services follow consistent logging and error-handling conventions.
-- A minimal playtest checklist exists and is kept up to date for each release.
+**Acceptance checklist (v2.4.0)**
+- [ ] Profile persists between game sessions
+- [ ] New player becomes Experienced after first join
+- [ ] DataStore errors are logged and handled gracefully
+- [ ] Schema version is tracked
 
 ---
 
-## Notes / housekeeping
+## v2.5.0 — Station Navigation
 
-- Versions listed above are **candidates**; we can merge/split minors depending on scope.
-- Each minor should have a short acceptance checklist (playable slice) and at least one basic automated test.
+Goal: Multiple modules with gateways.
+
+### Planned:
+- Additional modules (HallModule, etc.)
+- Gateways connecting modules
+- Door/gate interaction
+- GateLocked attribute support
+
+**Acceptance checklist (v2.5.0)**
+- [ ] Multiple modules exist in Station
+- [ ] Player can move between modules via gateways
+- [ ] Locked gates deny access with log
+- [ ] `CurrentStationModule` attribute updates on movement
+
+---
+
+## v3.0.0 — Location MVP (future)
+
+Goal: First planet/location with travel.
+
+- Station ↔ Location travel (no shuttle)
+- LandingZone with SpawnLocation
+- Basic exploration zone
+- Round lifecycle
+
+---
+
+## Notes
+
+- GUI (.rbxm files) are managed in Roblox Studio and exported
+- Scripts (.luau files) are managed in VS Code via Rojo
+- All changes should be tested with `rojo build` before commit

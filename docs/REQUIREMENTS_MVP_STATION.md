@@ -4,6 +4,36 @@
 
 Goal: deliver a small, playable vertical-slice focused on the Stellar Station (no planet flight yet). Players can join, spawn on the Station, move between modules, interact with automatic doors, and have persistent profile data (credits, knowledge tree, upgrades) saved at checkpoints.
 
+## Architecture (v2.x)
+
+The codebase follows a minimal architecture with clear separation:
+
+### Code Structure (5 files)
+- `ReplicatedStorage/Shared/Constants.luau` — all constants (GameModes, Attributes, Paths)
+- `ReplicatedStorage/Shared/Events.luau` — RemoteEvent factory
+- `ReplicatedStorage/Shared/Logger.luau` — structured logging
+- `ServerScriptService/GameServer.server.luau` — ALL server logic
+- `StarterPlayerScripts/GameClient.client.luau` — ALL client logic
+
+### Key Contracts
+- **Single source of truth**: `Player.CurrentMode` attribute (Join | Station | Location)
+- **Player profile**: `Player.IsNewPlayer` attribute (true for first-time players)
+- **State transitions**: Only server can change `CurrentMode`
+- **GUI visibility**: Determined entirely by `CurrentMode` value
+
+### Join Flow (v2.1.0)
+1. Player connects → Server loads profile
+2. Server sets `IsNewPlayer` and `CurrentMode = "Join"`
+3. Client displays JoinGameGui with:
+   - Player nickname (`player.DisplayName`)
+   - Player avatar (from `Players:GetUserThumbnailAsync`)
+   - Status: "New Player" or "Experienced"
+4. Click "Join Game" → Client sends `JoinGame` RemoteEvent
+5. Server finds `SpawnLocation` at `Workspace/StellarStation/Modules/CommandModule/SpawnLocation`
+6. Server calls `player:LoadCharacter()` with `RespawnLocation` set
+7. Server sets `CurrentMode = "Station"`
+8. Client hides JoinGameGui, shows StationGui
+
 ## Station structure (Modules + Gateways)
 
 This section is authoritative for how the Stellar Station is physically organized.

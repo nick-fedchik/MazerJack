@@ -1,7 +1,7 @@
 --[[
     Тип скрипта: Script (Server)
     Назва: GameServer
-    Версія: 2.0.0
+    Версія: 2.1.0
     Розміщення: ServerScriptService/GameServer
 
     Призначення:
@@ -10,13 +10,20 @@
 
     Загальна логіка:
       1. Ініціалізує Events
-      2. При підключенні гравця — ставить CurrentMode = "Join"
-      3. При отриманні JoinGame — спавнить гравця, ставить "Station"
+      2. При підключенні гравця:
+         - Завантажує профіль (New/Experienced)
+         - Встановлює CurrentMode = "Join"
+         - Встановлює IsNewPlayer атрибут
+      3. При отриманні JoinGame:
+         - Знаходить SpawnLocation в CommandModule
+         - Спавнить гравця на SpawnLocation
+         - Встановлює CurrentMode = "Station"
       4. При GoToLocation — перехід на локацію (TODO)
       5. При ExitGame — повертає в Join
 
     Контракти:
-      - Player.CurrentMode — атрибут, єдине джерело правди
+      - Player.CurrentMode — атрибут, єдине джерело правди для режиму
+      - Player.IsNewPlayer — атрибут, визначає чи гравець новий
       - Всі переходи станів тільки тут
       - Клієнт НЕ може змінювати стан напряму
 --]]
@@ -37,7 +44,7 @@ local Logger = require(Shared.Logger)
 local Constants = require(Shared.Constants)
 local Events = require(Shared.Events)
 
-local log = Logger.new("GameServer", "2.0.0")
+local log = Logger.new("GameServer", "2.1.0")
 
 ----------------------------------------------------------------
 -- Constants shortcuts
@@ -46,9 +53,86 @@ local log = Logger.new("GameServer", "2.0.0")
 local GameMode = Constants.GameMode
 local Attribute = Constants.Attribute
 local RemoteEvent = Constants.RemoteEvent
+local Path = Constants.Path
 
 ----------------------------------------------------------------
--- Helper Functions
+-- Player Profile Storage (Mock for MVP)
+----------------------------------------------------------------
+
+--[[
+    playerProfiles
+    Призначення:
+      Тимчасове сховище профілів гравців (mock замість DataStore).
+      Для MVP: всі гравці вважаються новими при кожному запуску.
+    
+    TODO: Замінити на DataStoreService для persistence.
+--]]
+local playerProfiles: { [number]: { isNew: boolean } } = {}
+
+----------------------------------------------------------------
+-- Helper Functions: Profile
+----------------------------------------------------------------
+
+--[[
+    loadPlayerProfile(player)
+    Призначення:
+      Завантажує профіль гравця з сховища.
+      Для MVP: завжди повертає новий профіль.
+
+    Вхідні параметри:
+      player (Player) — гравець
+
+    Вихід:
+      { isNew: boolean } — профіль гравця
+
+    TODO: Інтегрувати з DataStoreService.
+--]]
+local function loadPlayerProfile(player: Player): { isNew: boolean }
+	local userId = player.UserId
+	
+	-- Перевіряємо чи вже є профіль в пам'яті
+	if playerProfiles[userId] then
+		log:Info("loadPlayerProfile", "%s: Existing profile loaded", player.Name)
+		return playerProfiles[userId]
+	end
+	
+	-- TODO: Тут буде DataStore:GetAsync()
+	-- Для MVP: всі нові
+	local profile = {
+		isNew = true,
+	}
+	
+	playerProfiles[userId] = profile
+	log:Info("loadPlayerProfile", "%s: New profile created (MVP mock)", player.Name)
+	
+	return profile
+end
+
+--[[
+    savePlayerProfile(player)
+    Призначення:
+      Зберігає профіль гравця.
+      Для MVP: оновлює isNew на false.
+
+    Вхідні параметри:
+      player (Player) — гравець
+
+    TODO: Інтегрувати з DataStoreService.
+--]]
+local function savePlayerProfile(player: Player)
+	local userId = player.UserId
+	
+	if playerProfiles[userId] then
+		-- Після першого Join гравець вже не новий
+		playerProfiles[userId].isNew = false
+		log:Info("savePlayerProfile", "%s: Profile saved (isNew = false)", player.Name)
+	end
+	
+	-- TODO: Тут буде DataStore:SetAsync()
+end
+
+----------------------------------------------------------------
+-- Helper Functions: State
 ----------------------------------------------------------------
 
 --[[
@@ -85,17 +169,81 @@ local function getPlayerMode(player: Player): string?
 end
 
 --[[
+    setPlayerIsNew(player, isNew)
+    Призначення:
+      Встановлює атрибут IsNewPlayer.
+
+    Вхідні параметри:
+      player (Player) — гравець
+      isNew (boolean) — чи гравець новий
+--]]
+local function setPlayerIsNew(player: Player, isNew: boolean)
+	player:SetAttribute(Attribute.IsNewPlayer, isNew)
+	log:Info("setPlayerIsNew", "%s: IsNewPlayer = %s", player.Name, tostring(isNew))
+end
+
+----------------------------------------------------------------
+-- Helper Functions: Spawn
+----------------------------------------------------------------
+
+--[[
+    findSpawnLocation()
+    Призначення:
+      Знаходить SpawnLocation в CommandModule.
+
+    Вихід:
+      SpawnLocation | nil — знайдений SpawnLocation або nil
+--]]
+local function findSpawnLocation(): SpawnLocation?
+	local workspace = game:GetService("Workspace")
+	
+	-- Шукаємо за шляхом з Constants
+	local pathParts = string.split(Path.SpawnLocation, "/")
+	local current: Instance = workspace
+	
+	for _, part in ipairs(pathParts) do
+		local child = current:FindFirstChild(part)
+		if not child then
+			log:Warn("findSpawnLocation", "Path not found at: %s (looking for %s)", current:GetFullName(), part)
+			return nil
+		end
+		current = child
+	end
+	
+	if current:IsA("SpawnLocation") then
+		log:Info("findSpawnLocation", "Found SpawnLocation: %s", current:GetFullName())
+		return current :: SpawnLocation
+	end
+	
+	log:Warn("findSpawnLocation", "Found object is not SpawnLocation: %s", current.ClassName)
+	return nil
+end
+
+--[[
     spawnPlayerAtStation(player)
     Призначення:
       Спавнить персонажа гравця на станції.
+      Використовує SpawnLocation в CommandModule якщо доступний.
 
     Вхідні параметри:
       player (Player) — гравець
 
     Побічні ефекти:
+      - Встановлює RespawnLocation якщо знайдено SpawnLocation
       - Завантажує персонажа
 --]]
 local function spawnPlayerAtStation(player: Player)
+	-- Шукаємо SpawnLocation
+	local spawnLocation = findSpawnLocation()
+	
+	if spawnLocation then
+		player.RespawnLocation = spawnLocation
+		log:Info("spawnPlayerAtStation", "%s: RespawnLocation set to %s", player.Name, spawnLocation:GetFullName())
+	else
+		log:Warn("spawnPlayerAtStation", "%s: SpawnLocation not found, using default spawn", player.Name)
+	end
+	
+	-- Завантажуємо персонажа
 	log:Info("spawnPlayerAtStation", "Loading character for %s", player.Name)
 	player:LoadCharacter()
 end
@@ -108,11 +256,20 @@ end
     onPlayerAdded(player)
     Призначення:
       Обробляє підключення нового гравця.
+      1. Завантажує профіль
+      2. Встановлює атрибути (IsNewPlayer, CurrentMode)
 --]]
 local function onPlayerAdded(player: Player)
-	log:Info("onPlayerAdded", "Player joined: %s (UserId: %d)", player.Name, player.UserId)
+	log:Info("onPlayerAdded", "Player joined: %s (UserId: %d, DisplayName: %s)", 
+		player.Name, player.UserId, player.DisplayName)
 	
-	-- Встановлюємо початковий стан
+	-- Завантажуємо профіль
+	local profile = loadPlayerProfile(player)
+	
+	-- Встановлюємо атрибут IsNewPlayer
+	setPlayerIsNew(player, profile.isNew)
+	
+	-- Встановлюємо початковий режим
 	setPlayerMode(player, GameMode.Join)
 end
 
@@ -120,16 +277,23 @@ end
     onPlayerRemoving(player)
     Призначення:
       Обробляє відключення гравця.
+      Зберігає профіль перед виходом.
 --]]
 local function onPlayerRemoving(player: Player)
 	log:Info("onPlayerRemoving", "Player left: %s", player.Name)
-	-- Тут можна зберегти прогрес (TODO)
+	
+	-- Зберігаємо профіль
+	savePlayerProfile(player)
 end
 
 --[[
     onJoinGame(player)
     Призначення:
       Обробляє запит гравця на вхід у гру.
+      1. Перевіряє що гравець в режимі Join
+      2. Спавнить на SpawnLocation
+      3. Переводить в режим Station
+      4. Оновлює профіль (більше не новий)
 --]]
 local function onJoinGame(player: Player)
 	local currentMode = getPlayerMode(player)
@@ -141,11 +305,15 @@ local function onJoinGame(player: Player)
 	
 	log:Info("onJoinGame", "%s is joining the game", player.Name)
 	
-	-- Спавнимо персонажа
+	-- Спавнимо персонажа на станції
 	spawnPlayerAtStation(player)
 	
 	-- Переходимо в режим Station
 	setPlayerMode(player, GameMode.Station)
+	
+	-- Оновлюємо профіль: гравець більше не новий
+	setPlayerIsNew(player, false)
+	savePlayerProfile(player)
 end
 
 --[[
@@ -171,9 +339,13 @@ end
     onExitGame(player)
     Призначення:
       Обробляє запит гравця на вихід з гри.
+      Видаляє персонажа і повертає в режим Join.
 --]]
 local function onExitGame(player: Player)
 	log:Info("onExitGame", "%s is exiting game", player.Name)
+	
+	-- Зберігаємо профіль перед виходом
+	savePlayerProfile(player)
 	
 	-- Видаляємо персонажа
 	if player.Character then
@@ -188,6 +360,14 @@ end
 -- Initialization
 ----------------------------------------------------------------
 
+--[[
+    init()
+    Призначення:
+      Ініціалізує сервер гри.
+      1. Створює RemoteEvents
+      2. Підключає обробники подій гравців
+      3. Підключає RemoteEvent handlers
+--]]
 local function init()
 	log:Info("init", "=== %s v%s Server Starting ===", Constants.Game.Name, Constants.Game.Version)
 	
@@ -230,5 +410,5 @@ end
 init()
 
 ----------------------------------------------------------------
--- End of script: GameServer v2.0.0
+-- End of script: GameServer v2.1.0
 ----------------------------------------------------------------

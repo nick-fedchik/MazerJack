@@ -1,7 +1,7 @@
 --[[
     Тип скрипта: LocalScript
     Назва: GameClient
-    Версія: 2.0.0
+    Версія: 2.1.0
     Розміщення: StarterPlayerScripts/GameClient
 
     Призначення:
@@ -10,14 +10,16 @@
 
     Загальна логіка:
       1. Очікує готовності Events
-      2. Слухає зміни атрибута CurrentMode
-      3. Показує/ховає GUI відповідно до режиму
-      4. Обробляє кліки на кнопках GUI
+      2. Слухає зміни атрибутів CurrentMode та IsNewPlayer
+      3. Заповнює профіль гравця в JoinGameGui (нікнейм, аватар, статус)
+      4. Показує/ховає GUI відповідно до режиму
+      5. Обробляє кліки на кнопках GUI
 
     Контракти:
       - Клієнт НЕ змінює CurrentMode напряму
       - Клієнт ТІЛЬКИ надсилає RemoteEvents на сервер
       - GUI видимість визначається ТІЛЬКИ значенням CurrentMode
+      - Профіль (нікнейм, аватар) отримується з Roblox API
 --]]
 
 ----------------------------------------------------------------
@@ -36,7 +38,7 @@ local Logger = require(Shared.Logger)
 local Constants = require(Shared.Constants)
 local Events = require(Shared.Events)
 
-local log = Logger.new("GameClient", "2.0.0")
+local log = Logger.new("GameClient", "2.1.0")
 
 ----------------------------------------------------------------
 -- Player reference
@@ -61,24 +63,94 @@ local joinGameGui: ScreenGui? = nil
 local stationGui: ScreenGui? = nil
 
 ----------------------------------------------------------------
--- Helper Functions
+-- Helper Functions: GUI Search
 ----------------------------------------------------------------
 
 --[[
-    findButton(gui, buttonName)
+    findDescendant(parent, name)
     Призначення:
-      Шукає кнопку в GUI за назвою (рекурсивно).
+      Шукає нащадка в GUI за назвою (рекурсивно).
+
+    Вхідні параметри:
+      parent (Instance) — де шукати
+      name (string) — назва елемента
+
+    Вихід:
+      Instance | nil
+--]]
+local function findDescendant(parent: Instance, name: string): Instance?
+	return parent:FindFirstChild(name, true)
+end
+
+--[[
+    findButton(gui, ...)
+    Призначення:
+      Шукає кнопку за одним із можливих імен.
 
     Вхідні параметри:
       gui (Instance) — GUI де шукати
-      buttonName (string) — назва кнопки
+      ... (string) — можливі назви кнопки
 
     Вихід:
       TextButton | nil
 --]]
-local function findButton(gui: Instance, buttonName: string): TextButton?
-	return gui:FindFirstChild(buttonName, true) :: TextButton?
+local function findButton(gui: Instance, ...: string): TextButton?
+	for _, name in ipairs({...}) do
+		local button = findDescendant(gui, name)
+		if button and (button:IsA("TextButton") or button:IsA("ImageButton")) then
+			return button :: TextButton
+		end
+	end
+	return nil
 end
+
+--[[
+    findTextLabel(gui, ...)
+    Призначення:
+      Шукає TextLabel за одним із можливих імен.
+
+    Вхідні параметри:
+      gui (Instance) — GUI де шукати
+      ... (string) — можливі назви
+
+    Вихід:
+      TextLabel | nil
+--]]
+local function findTextLabel(gui: Instance, ...: string): TextLabel?
+	for _, name in ipairs({...}) do
+		local label = findDescendant(gui, name)
+		if label and label:IsA("TextLabel") then
+			return label :: TextLabel
+		end
+	end
+	return nil
+end
+
+--[[
+    findImageLabel(gui, ...)
+    Призначення:
+      Шукає ImageLabel за одним із можливих імен.
+
+    Вхідні параметри:
+      gui (Instance) — GUI де шукати
+      ... (string) — можливі назви
+
+    Вихід:
+      ImageLabel | nil
+--]]
+local function findImageLabel(gui: Instance, ...: string): ImageLabel?
+	for _, name in ipairs({...}) do
+		local label = findDescendant(gui, name)
+		if label and label:IsA("ImageLabel") then
+			return label :: ImageLabel
+		end
+	end
+	return nil
+end
+
+----------------------------------------------------------------
+-- Helper Functions: GUI State
+----------------------------------------------------------------
 
 --[[
     setGuiEnabled(gui, enabled)
@@ -107,8 +179,95 @@ local function getCurrentMode(): string?
 	return player:GetAttribute(Attribute.CurrentMode)
 end
 
+--[[
+    getIsNewPlayer()
+    Призначення:
+      Отримує чи гравець новий.
+
+    Вихід:
+      boolean
+--]]
+local function getIsNewPlayer(): boolean
+	return player:GetAttribute(Attribute.IsNewPlayer) == true
+end
+
 ----------------------------------------------------------------
--- GUI State Management
+-- Profile Display
+----------------------------------------------------------------
+
+--[[
+    getPlayerAvatarUrl(userId)
+    Призначення:
+      Генерує URL аватара гравця.
+
+    Вхідні параметри:
+      userId (number) — ID гравця
+
+    Вихід:
+      string — URL для ImageLabel.Image
+--]]
+local function getPlayerAvatarUrl(userId: number): string
+	-- Використовуємо Roblox thumbnail API
+	return string.format(
+		"https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=150&height=150&format=png",
+		userId
+	)
+end
+
+--[[
+    updateJoinGuiProfile()
+    Призначення:
+      Заповнює профіль гравця в JoinGameGui.
+      Встановлює нікнейм, аватар та статус (New/Experienced).
+--]]
+local function updateJoinGuiProfile()
+	if not joinGameGui then
+		return
+	end
+	
+	-- Нікнейм
+	local nameLabel = findTextLabel(joinGameGui, 
+		"PlayerName", "NameLabel", "PlayerNameLabel", "NicknameLabel")
+	if nameLabel then
+		nameLabel.Text = player.DisplayName
+		log:Info("updateJoinGuiProfile", "Set player name: %s", player.DisplayName)
+	end
+	
+	-- Аватар
+	local avatarImage = findImageLabel(joinGameGui,
+		"PlayerAvatar", "AvatarImage", "AvatarLabel", "PlayerImage")
+	if avatarImage then
+		-- Використовуємо async thumbnail API
+		local success, content = pcall(function()
+			return Players:GetUserThumbnailAsync(
+				player.UserId,
+				Enum.ThumbnailType.HeadShot,
+				Enum.ThumbnailSize.Size150x150
+			)
+		end)
+		
+		if success and content then
+			avatarImage.Image = content
+			log:Info("updateJoinGuiProfile", "Set player avatar from GetUserThumbnailAsync")
+		else
+			-- Fallback до URL
+			avatarImage.Image = getPlayerAvatarUrl(player.UserId)
+			log:Info("updateJoinGuiProfile", "Set player avatar from URL fallback")
+		end
+	end
+	
+	-- Статус (New Player / Experienced)
+	local statusLabel = findTextLabel(joinGameGui,
+		"PlayerStatus", "StatusLabel", "PlayerStatusLabel", "ExperienceLabel")
+	if statusLabel then
+		local isNew = getIsNewPlayer()
+		statusLabel.Text = isNew and "New Player" or "Experienced"
+		log:Info("updateJoinGuiProfile", "Set player status: %s", statusLabel.Text)
+	end
+end
+
+----------------------------------------------------------------
+-- GUI Visibility Management
 ----------------------------------------------------------------
 
 --[[
@@ -123,7 +282,13 @@ local function updateGuiVisibility()
 	log:Info("updateGuiVisibility", "Mode changed to: %s", tostring(mode))
 	
 	-- Join GUI: видимий тільки в режимі Join
-	setGuiEnabled(joinGameGui, mode == GameMode.Join)
+	local showJoin = mode == GameMode.Join
+	setGuiEnabled(joinGameGui, showJoin)
+	
+	-- Оновлюємо профіль коли показуємо JoinGui
+	if showJoin then
+		updateJoinGuiProfile()
+	end
 	
 	-- Station GUI: видимий тільки в режимі Station
 	setGuiEnabled(stationGui, mode == GameMode.Station)
@@ -203,9 +368,8 @@ local function setupJoinGui()
 	log:Info("setupJoinGui", "JoinGameGui found")
 	
 	-- Шукаємо кнопку Join (може мати різні назви)
-	local joinButton = findButton(joinGameGui, "JoinButton") 
-		or findButton(joinGameGui, "JoinGameButton")
-		or findButton(joinGameGui, "PlayButton")
+	local joinButton = findButton(joinGameGui, 
+		"JoinButton", "JoinGameButton", "PlayButton", "StartButton")
 	
 	if joinButton then
 		joinButton.Activated:Connect(onJoinButtonClick)
@@ -213,6 +377,9 @@ local function setupJoinGui()
 	else
 		log:Warn("setupJoinGui", "Join button not found in JoinGameGui")
 	end
+	
+	-- Заповнюємо профіль
+	updateJoinGuiProfile()
 	
 	-- Початково ховаємо (updateGuiVisibility покаже якщо потрібно)
 	joinGameGui.Enabled = false
@@ -234,8 +401,8 @@ local function setupStationGui()
 	log:Info("setupStationGui", "StationGui found")
 	
 	-- Кнопка Go to Location
-	local goLocationButton = findButton(stationGui, "GoLocationButton")
-		or findButton(stationGui, "GoToLocationButton")
+	local goLocationButton = findButton(stationGui, 
+		"GoLocationButton", "GoToLocationButton", "LocationButton")
 	
 	if goLocationButton then
 		goLocationButton.Activated:Connect(onGoLocationButtonClick)
@@ -243,8 +410,8 @@ local function setupStationGui()
 	end
 	
 	-- Кнопка Exit
-	local exitButton = findButton(stationGui, "ExitButton")
-		or findButton(stationGui, "ExitGameButton")
+	local exitButton = findButton(stationGui, 
+		"ExitButton", "ExitGameButton", "BackButton")
 	
 	if exitButton then
 		exitButton.Activated:Connect(onExitButtonClick)
@@ -256,7 +423,7 @@ local function setupStationGui()
 end
 
 ----------------------------------------------------------------
--- Mode Change Listener
+-- Attribute Change Listeners
 ----------------------------------------------------------------
 
 --[[
@@ -272,10 +439,32 @@ local function setupModeListener()
 	log:Info("setupModeListener", "Mode change listener connected")
 end
 
+--[[
+    setupIsNewListener()
+    Призначення:
+      Підключає слухача змін атрибута IsNewPlayer.
+--]]
+local function setupIsNewListener()
+	player:GetAttributeChangedSignal(Attribute.IsNewPlayer):Connect(function()
+		updateJoinGuiProfile()
+	end)
+	
+	log:Info("setupIsNewListener", "IsNewPlayer change listener connected")
+end
+
 ----------------------------------------------------------------
 -- Initialization
 ----------------------------------------------------------------
 
+--[[
+    init()
+    Призначення:
+      Ініціалізує клієнт гри.
+      1. Очікує готовності Events
+      2. Налаштовує GUI
+      3. Підключає слухачів атрибутів
+      4. Оновлює видимість на основі поточного стану
+--]]
 local function init()
 	log:Info("init", "=== GameClient Starting ===")
 	
@@ -290,8 +479,9 @@ local function init()
 	setupJoinGui()
 	setupStationGui()
 	
-	-- Підключаємо слухача змін режиму
+	-- Підключаємо слухачів змін атрибутів
 	setupModeListener()
+	setupIsNewListener()
 	
 	-- Оновлюємо видимість на основі поточного стану
 	-- (на випадок якщо атрибут вже встановлений)
@@ -304,5 +494,5 @@ end
 init()
 
 ----------------------------------------------------------------
--- End of script: GameClient v2.0.0
+-- End of script: GameClient v2.1.0
 ----------------------------------------------------------------
