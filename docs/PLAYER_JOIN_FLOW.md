@@ -5,24 +5,70 @@
 
 ---
 
-## Огляд State Machine
+## Сценарій підключення гравця
+
+### Крок 1: Підключення (Connect)
+- Гравець підключився до сервера Roblox
+- **Персонаж НЕ створюється** — гравець ще не грає
+- Гравець бачить чорний екран
+
+### Крок 2: Ідентифікація гравця
+- Сервер отримує інформацію про гравця:
+  - `player.UserId` — унікальний ID
+  - `player.DisplayName` — нікнейм
+  - Аватар через `rbxthumb://`
+
+### Крок 3: Визначення статусу
+- Сервер перевіряє DataStore: чи грав цей гравець раніше?
+- Встановлює атрибут `IsNewPlayer`:
+  - `true` — новий гравець (перший раз)
+  - `false` — досвідчений (грав раніше)
+
+### Крок 4: Показ заставки
+- Активується `JoinGameGui`:
+  - Чорний/темний фон на весь екран
+  - Аватар гравця
+  - Нікнейм гравця
+  - Статус: "Новий дослідник" або "Досвідчений мандрівник"
+  - Кнопка "ПРИЄДНАТИСЯ"
+
+### Крок 5: Очікування
+- **Нічого не відбувається**
+- Сервер і клієнт чекають поки гравець натисне кнопку
+
+### Крок 6: Гравець натиснув "ПРИЄДНАТИСЯ"
+- Клієнт відправляє `JoinGame` RemoteEvent на сервер
+
+### Крок 7: Активація гри
+1. Сервер отримує RemoteEvent
+2. Сервер ховає `JoinGameGui` (через зміну атрибута `CurrentMode`)
+3. Сервер робить spawn персонажа на `StellarStation/Modules/CommandModule/SpawnLocation`
+4. Гравець з'являється на космічній станції
+5. Показується `StationGui`
+
+---
+
+## Стани гравця (State Machine)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│   Player.CurrentMode = "Join"                               │
-│   ├── Character: НЕ ІСНУЄ                                   │
-│   ├── JoinGameGui: VISIBLE                                  │
-│   └── StationGui: HIDDEN                                    │
+│   CurrentMode = "Join"                                      │
+│   ├── Персонаж: НЕ ІСНУЄ                                    │
+│   ├── JoinGameGui: ПОКАЗАНО                                 │
+│   ├── StationGui: СХОВАНО                                   │
+│   └── Гравець: дивиться на заставку, чекає                  │
 │                                                             │
-│                    │ Player clicks "ПРИЄДНАТИСЯ"            │
-│                    │ Client fires JoinGame RemoteEvent      │
+│                    │                                        │
+│                    │ Клік на "ПРИЄДНАТИСЯ"                  │
+│                    │ → JoinGame RemoteEvent                 │
 │                    ▼                                        │
 │                                                             │
-│   Player.CurrentMode = "Station"                            │
-│   ├── Character: ІСНУЄ (spawned on SpawnLocation)           │
-│   ├── JoinGameGui: HIDDEN                                   │
-│   └── StationGui: VISIBLE                                   │
+│   CurrentMode = "Station"                                   │
+│   ├── Персонаж: СТВОРЕНО (spawn на станції)                 │
+│   ├── JoinGameGui: СХОВАНО                                  │
+│   ├── StationGui: ПОКАЗАНО                                  │
+│   └── Гравець: грає на космічній станції                    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -311,100 +357,229 @@ t=5.1   Character spawns on station     Character appears in game
 
 ---
 
-## ЧАСТИНА 6: Промпт для Roblox Studio Assistant
+## ІНСТРУКЦІЯ ДЛЯ ROBLOX STUDIO ASSISTANT
 
-### Створення JoinGameGui
+### ⚠️ ВАЖЛИВО: Правила для Assistant
 
-```
-Create a ScreenGui in StarterGui named exactly "JoinGameGui" with these exact children:
+1. **НЕ СТВОРЮВАТИ СКРИПТИ** — вся логіка вже є в `GameClient.luau`
+2. **ТОЧНІ ІМЕНА** — імена елементів мають бути ТОЧНО як вказано
+3. **Enabled = false** — GUI мають бути вимкнені за замовчуванням
+4. **Ієрархія важлива** — елементи мають бути вкладені правильно
 
-1. Set JoinGameGui.Enabled = false
-2. Add a Frame named "MainFrame":
-   - Size: UDim2.new(0, 400, 0, 500)
-   - Position: UDim2.new(0.5, -200, 0.5, -250)
-   - BackgroundColor3: Color3.fromRGB(20, 20, 30)
-   - BackgroundTransparency: 0.2
+---
 
-3. Inside MainFrame, add ImageLabel named "AvatarImage":
-   - Size: UDim2.new(0, 150, 0, 150)
-   - Position: UDim2.new(0.5, -75, 0, 30)
-   - Image: "" (empty, will be set by script)
-   - Add UICorner with CornerRadius = UDim.new(0.5, 0)
+### ПРОМПТ 1: Створити JoinGameGui
 
-4. Inside MainFrame, add TextLabel named "NicknameLabel":
-   - Size: UDim2.new(1, -40, 0, 40)
-   - Position: UDim2.new(0, 20, 0, 200)
-   - Text: "" (empty, will be set by script)
-   - TextColor3: Color3.fromRGB(255, 255, 255)
-   - TextSize: 24
-   - Font: GothamBold
-
-5. Inside MainFrame, add TextLabel named "StatusLabel":
-   - Size: UDim2.new(1, -40, 0, 30)
-   - Position: UDim2.new(0, 20, 0, 250)
-   - Text: "" (empty, will be set by script)
-   - TextColor3: Color3.fromRGB(255, 255, 0)
-   - TextSize: 18
-   - Font: Gotham
-
-6. Inside MainFrame, add TextButton named "JoinButton":
-   - Size: UDim2.new(0, 200, 0, 50)
-   - Position: UDim2.new(0.5, -100, 1, -80)
-   - Text: "ПРИЄДНАТИСЯ"
-   - BackgroundColor3: Color3.fromRGB(0, 170, 0)
-   - TextColor3: Color3.fromRGB(255, 255, 255)
-   - TextSize: 20
-   - Font: GothamBold
-   - Add UICorner with CornerRadius = UDim.new(0, 8)
-
-Do NOT add any scripts. The GameClient.luau script handles all logic.
-```
-
-### Створення StationGui
+Скопіюй цей текст в Roblox Studio Assistant:
 
 ```
-Create a ScreenGui in StarterGui named exactly "StationGui" with these exact children:
+Create a ScreenGui in StarterGui. Follow these EXACT specifications:
 
-1. Set StationGui.Enabled = false
-2. Add a Frame named "TopBar":
-   - Size: UDim2.new(1, 0, 0, 60)
-   - Position: UDim2.new(0, 0, 0, 0)
-   - BackgroundColor3: Color3.fromRGB(20, 20, 30)
-   - BackgroundTransparency: 0.3
+NAME: "JoinGameGui"
+PROPERTIES:
+- Enabled = false
+- ResetOnSpawn = false
+- IgnoreGuiInset = true
+- ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-3. Inside TopBar, add TextLabel named "LocationLabel":
-   - Size: UDim2.new(0, 300, 1, 0)
-   - Position: UDim2.new(0, 20, 0, 0)
-   - Text: "Космічна Станція"
-   - TextColor3: Color3.fromRGB(255, 255, 255)
-   - TextSize: 22
-   - TextXAlignment: Left
-   - Font: GothamBold
+HIERARCHY:
+JoinGameGui (ScreenGui)
+└── Background (Frame)
+    ├── AvatarImage (ImageLabel)
+    ├── NicknameLabel (TextLabel)
+    ├── StatusLabel (TextLabel)
+    └── JoinButton (TextButton)
 
-4. Inside TopBar, add TextButton named "ExitButton":
-   - Size: UDim2.new(0, 80, 0, 40)
-   - Position: UDim2.new(1, -100, 0.5, -20)
-   - Text: "ВИХІД"
-   - BackgroundColor3: Color3.fromRGB(200, 50, 50)
-   - TextColor3: Color3.fromRGB(255, 255, 255)
-   - Add UICorner with CornerRadius = UDim.new(0, 8)
+ELEMENT: Background (Frame)
+- Name: "Background"
+- Size: UDim2.new(1, 0, 1, 0) -- full screen
+- Position: UDim2.new(0, 0, 0, 0)
+- BackgroundColor3: Color3.fromRGB(10, 10, 20) -- dark blue/black
+- BackgroundTransparency: 0
+- BorderSizePixel: 0
 
-5. Add a Frame named "BottomPanel":
-   - Size: UDim2.new(0, 300, 0, 80)
-   - Position: UDim2.new(0.5, -150, 1, -100)
-   - BackgroundColor3: Color3.fromRGB(20, 20, 30)
-   - BackgroundTransparency: 0.3
-   - Add UICorner with CornerRadius = UDim.new(0, 12)
+ELEMENT: AvatarImage (ImageLabel) - child of Background
+- Name: "AvatarImage"
+- Size: UDim2.new(0, 150, 0, 150)
+- Position: UDim2.new(0.5, -75, 0.3, -75)
+- AnchorPoint: Vector2.new(0, 0)
+- BackgroundTransparency: 1
+- Image: "" (empty string, script will fill)
+- Add UICorner child with CornerRadius = UDim.new(1, 0) for circle
 
-6. Inside BottomPanel, add TextButton named "GoToLocationButton":
-   - Size: UDim2.new(0, 200, 0, 50)
-   - Position: UDim2.new(0.5, -100, 0.5, -25)
-   - Text: "НА ПЛАНЕТУ"
-   - BackgroundColor3: Color3.fromRGB(50, 100, 200)
-   - TextColor3: Color3.fromRGB(255, 255, 255)
-   - Add UICorner with CornerRadius = UDim.new(0, 8)
+ELEMENT: NicknameLabel (TextLabel) - child of Background
+- Name: "NicknameLabel"
+- Size: UDim2.new(0, 400, 0, 50)
+- Position: UDim2.new(0.5, -200, 0.3, 100)
+- BackgroundTransparency: 1
+- Text: "" (empty, script will fill)
+- TextColor3: Color3.fromRGB(255, 255, 255)
+- TextSize: 28
+- Font: Enum.Font.GothamBold
+- TextXAlignment: Enum.TextXAlignment.Center
 
-Do NOT add any scripts. The GameClient.luau script handles all logic.
+ELEMENT: StatusLabel (TextLabel) - child of Background
+- Name: "StatusLabel"
+- Size: UDim2.new(0, 400, 0, 30)
+- Position: UDim2.new(0.5, -200, 0.3, 160)
+- BackgroundTransparency: 1
+- Text: "" (empty, script will fill)
+- TextColor3: Color3.fromRGB(255, 255, 0) -- yellow
+- TextSize: 20
+- Font: Enum.Font.Gotham
+- TextXAlignment: Enum.TextXAlignment.Center
+
+ELEMENT: JoinButton (TextButton) - child of Background
+- Name: "JoinButton"
+- Size: UDim2.new(0, 250, 0, 60)
+- Position: UDim2.new(0.5, -125, 0.7, 0)
+- BackgroundColor3: Color3.fromRGB(0, 180, 0) -- green
+- Text: "ПРИЄДНАТИСЯ"
+- TextColor3: Color3.fromRGB(255, 255, 255)
+- TextSize: 24
+- Font: Enum.Font.GothamBold
+- Add UICorner child with CornerRadius = UDim.new(0, 12)
+- Add UIStroke child with Color = Color3.fromRGB(255,255,255), Thickness = 2
+
+DO NOT ADD ANY SCRIPTS. The existing GameClient.luau handles all button logic.
+```
+
+---
+
+### ПРОМПТ 2: Створити StationGui
+
+Скопіюй цей текст в Roblox Studio Assistant:
+
+```
+Create a ScreenGui in StarterGui. Follow these EXACT specifications:
+
+NAME: "StationGui"
+PROPERTIES:
+- Enabled = false
+- ResetOnSpawn = false
+- ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+HIERARCHY:
+StationGui (ScreenGui)
+├── TopBar (Frame)
+│   ├── LocationLabel (TextLabel)
+│   └── ExitButton (TextButton)
+└── BottomPanel (Frame)
+    └── GoToLocationButton (TextButton)
+
+ELEMENT: TopBar (Frame)
+- Name: "TopBar"
+- Size: UDim2.new(1, 0, 0, 60)
+- Position: UDim2.new(0, 0, 0, 0)
+- BackgroundColor3: Color3.fromRGB(20, 20, 35)
+- BackgroundTransparency: 0.2
+- BorderSizePixel: 0
+
+ELEMENT: LocationLabel (TextLabel) - child of TopBar
+- Name: "LocationLabel"
+- Size: UDim2.new(0, 300, 1, 0)
+- Position: UDim2.new(0, 20, 0, 0)
+- BackgroundTransparency: 1
+- Text: "Космічна Станція"
+- TextColor3: Color3.fromRGB(255, 255, 255)
+- TextSize: 24
+- Font: Enum.Font.GothamBold
+- TextXAlignment: Enum.TextXAlignment.Left
+- TextYAlignment: Enum.TextYAlignment.Center
+
+ELEMENT: ExitButton (TextButton) - child of TopBar
+- Name: "ExitButton"
+- Size: UDim2.new(0, 100, 0, 40)
+- Position: UDim2.new(1, -120, 0.5, -20)
+- BackgroundColor3: Color3.fromRGB(200, 50, 50) -- red
+- Text: "ВИХІД"
+- TextColor3: Color3.fromRGB(255, 255, 255)
+- TextSize: 18
+- Font: Enum.Font.GothamBold
+- Add UICorner child with CornerRadius = UDim.new(0, 8)
+
+ELEMENT: BottomPanel (Frame)
+- Name: "BottomPanel"
+- Size: UDim2.new(0, 300, 0, 80)
+- Position: UDim2.new(0.5, -150, 1, -100)
+- BackgroundColor3: Color3.fromRGB(20, 20, 35)
+- BackgroundTransparency: 0.2
+- Add UICorner child with CornerRadius = UDim.new(0, 12)
+
+ELEMENT: GoToLocationButton (TextButton) - child of BottomPanel
+- Name: "GoToLocationButton"
+- Size: UDim2.new(0, 220, 0, 50)
+- Position: UDim2.new(0.5, -110, 0.5, -25)
+- BackgroundColor3: Color3.fromRGB(50, 120, 200) -- blue
+- Text: "НА ПЛАНЕТУ"
+- TextColor3: Color3.fromRGB(255, 255, 255)
+- TextSize: 20
+- Font: Enum.Font.GothamBold
+- Add UICorner child with CornerRadius = UDim.new(0, 8)
+
+DO NOT ADD ANY SCRIPTS. The existing GameClient.luau handles all button logic.
+```
+
+---
+
+### ПРОМПТ 3: Створити SpawnLocation
+
+Скопіюй цей текст в Roblox Studio Assistant:
+
+```
+Create a SpawnLocation for player spawning. Follow these EXACT specifications:
+
+LOCATION: Create folder hierarchy in Workspace:
+Workspace
+└── StellarStation (Folder)
+    └── Modules (Folder)
+        └── CommandModule (Folder or Model)
+            └── SpawnLocation (SpawnLocation part)
+
+ELEMENT: SpawnLocation
+- ClassName: SpawnLocation (not Part!)
+- Name: "SpawnLocation"
+- Size: Vector3.new(6, 1, 6)
+- Position: Place it on the floor of CommandModule where players should appear
+- Anchored: true
+- CanCollide: false
+- Transparency: 1 (invisible)
+- Neutral: true
+- AllowTeamChangeOnTouch: false
+- Duration: 0
+
+The SpawnLocation should be invisible but positioned where the player character will stand when joining the game.
+
+If StellarStation or CommandModule already exist as Models, add SpawnLocation inside the existing CommandModule.
+```
+
+---
+
+### ПЕРЕВІРКА ПІСЛЯ СТВОРЕННЯ
+
+Після виконання промптів перевір в Explorer:
+
+```
+StarterGui
+├── JoinGameGui (ScreenGui) ← Enabled = false
+│   └── Background (Frame)
+│       ├── AvatarImage (ImageLabel)
+│       ├── NicknameLabel (TextLabel)
+│       ├── StatusLabel (TextLabel)
+│       └── JoinButton (TextButton)
+│
+└── StationGui (ScreenGui) ← Enabled = false
+    ├── TopBar (Frame)
+    │   ├── LocationLabel (TextLabel)
+    │   └── ExitButton (TextButton)
+    └── BottomPanel (Frame)
+        └── GoToLocationButton (TextButton)
+
+Workspace
+└── StellarStation
+    └── Modules
+        └── CommandModule
+            └── SpawnLocation (SpawnLocation)
 ```
 
 ---
