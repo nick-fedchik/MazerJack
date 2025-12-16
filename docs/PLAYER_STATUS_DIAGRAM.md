@@ -1,64 +1,106 @@
-# Player Status Diagram (FSM + UI)
+# Player Status Diagram (State Machine)
 
-This document describes the per-player runtime states used by the server `GameStateMachine` and how the client UI is expected to react.
+> Game Version: 2.1.0
 
-## State machine (authoritative)
+Цей документ описує стани гравця та переходи між ними.
+
+## State Machine (Authoritative)
 
 ```mermaid
 stateDiagram-v2
     direction LR
 
-    [*] --> Join: Players.PlayerAdded\nMainServer -> FSM:SetState("Join")
+    [*] --> Join: Players.PlayerAdded
 
-    Join: CurrentMode = "Join" (or nil during initial replication)
-    Join: Spawn disabled\nPlayers.CharacterAutoLoads = false
-    Join: JoinGameGui Enabled=true\nStationGui Enabled=false
+    Join: CurrentMode = "Join"
+    Join: Character = nil (не створено)
+    Join: JoinGameGui = Enabled
+    Join: StationGui = Disabled
+    Join: LocationGui = Disabled
 
-    Join --> Station: Client clicks Join Game\nGameEvent:JoinGame\nJoinEventHandler -> FSM:SetState("Station")
+    Join --> Station: JoinGame RemoteEvent
 
     Station: CurrentMode = "Station"
-    Station: Spawn enabled\nPlayerSpawnService:ApplySpawnForStation()\nStellarStation/Modules/CommandModule/SpawnLocation\nLoadCharacter()
-    Station: Station context\nCurrentStationModule (default: CommandModule)\nCurrentStationGate (optional)
-    Station: JoinGameGui Enabled=false\nStationGui Enabled=true
+    Station: Character = spawned
+    Station: SpawnLocation = CommandModule
+    Station: JoinGameGui = Disabled
+    Station: StationGui = Enabled
+    Station: LocationGui = Disabled
 
-    Station --> Join: ExitGame (Studio)\nStationEvent:ExitGame\nStateStation:RequestExitGame\nFSM:SetState("Join")
+    Station --> Location: GoToLocation RemoteEvent
 
-    Station --> Station: ExitGame (Live)\nTeleportService:Teleport(placeId)
+    Location: CurrentMode = "Location"
+    Location: Character = exists
+    Location: JoinGameGui = Disabled
+    Location: StationGui = Disabled
+    Location: LocationGui = Enabled
 
-    %% Reserved / future
-    Station --> Location: GoLocation (reserved)\nStationEvent:GoLocation\nStateStation:GoLocation (stub)
-    Location --> Station: Return to Station (future)
+    Location --> Station: ReturnToStation RemoteEvent
+
+    Station --> Join: ExitGame RemoteEvent
+    Location --> Join: ExitGame RemoteEvent
 
     Join --> [*]: PlayerRemoving
     Station --> [*]: PlayerRemoving
     Location --> [*]: PlayerRemoving
 ```
 
-## UI rules (client-side)
+## Стани
 
-- `JoinGameGui` is expected to be **disabled by default in assets** and enabled only when the player is not yet joined.
-  - Condition: `CurrentMode == nil` or `CurrentMode == "Join"` → show Join menu.
-  - Condition: any other mode (e.g., `"Station"`) → hide Join menu.
-- `StationGui` is expected to be hidden unless `CurrentMode == "Station"`.
+| State | CurrentMode | Character | Visible GUI |
+|-------|-------------|-----------|-------------|
+| Join | `"Join"` | `nil` | JoinGameGui |
+| Station | `"Station"` | spawned | StationGui |
+| Location | `"Location"` | exists | LocationGui |
 
-## Key signals / contracts
+## Переходи
 
-- Attribute: `Player:GetAttribute("CurrentMode")` is the single UI driver.
-- Station attributes (server authoritative):
-  - `Player:GetAttribute("CurrentStationModule")` (e.g. `CommandModule`)
-  - `Player:GetAttribute("CurrentStationGate")` (e.g. a gateway name while traversing)
-- RemoteEvents (canonical):
-  - `ReplicatedStorage/GameEvent` (Join lifecycle)
-  - `ReplicatedStorage/StationEvent` (Station actions)
+| From | To | Trigger | RemoteEvent |
+|------|-----|---------|-------------|
+| — | Join | `PlayerAdded` | — |
+| Join | Station | Click "ПРИЄДНАТИСЯ" | `JoinGame` |
+| Station | Location | Click "НА ПЛАНЕТУ" | `GoToLocation` |
+| Location | Station | Click "НА СТАНЦІЮ" | `ReturnToStation` |
+| Station/Location | Join | Click "ВИХІД" | `ExitGame` |
 
-## Station context tracking (module / gateway)
+## Player Attributes
 
-While `CurrentMode == "Station"`, the server updates station context attributes based on where the character moves:
+| Attribute | Type | Set By | Description |
+|-----------|------|--------|-------------|
+| `CurrentMode` | `string` | Server | Поточний стан: `"Join"`, `"Station"`, `"Location"` |
+| `IsNewPlayer` | `boolean` | Server | `true` якщо перший вхід в гру |
 
-- Entering a Module updates `CurrentStationModule` and clears `CurrentStationGate`.
-- Entering a Gateway updates `CurrentStationGate` (module remains unchanged).
+## GUI Visibility Rules
 
-## Related docs
+Клієнт (`GameClient.luau`) оновлює видимість GUI на основі `CurrentMode`:
 
-- Architecture overview: [../ARCHITECTURE.md](../ARCHITECTURE.md)
-- MVP requirements: [REQUIREMENTS_MVP_STATION.md](REQUIREMENTS_MVP_STATION.md)
+```lua
+local function updateGuiVisibility()
+    local mode = player:GetAttribute("CurrentMode")
+    
+    if joinGameGui then
+        joinGameGui.Enabled = (mode == "Join")
+    end
+    
+    if stationGui then
+        stationGui.Enabled = (mode == "Station")
+    end
+    
+    if locationGui then
+        locationGui.Enabled = (mode == "Location")
+    end
+end
+```
+
+## Contracts
+
+- **Single source of truth**: `Player.CurrentMode` attribute
+- **Server authority**: Only server changes `CurrentMode`
+- **Client read-only**: Client only reads attributes, sends RemoteEvents
+- **Transition cooldown**: 1 second between transitions (anti-spam)
+
+## Related Files
+
+- [GameServer.luau](../src/ServerScriptService/GameServer.luau) — state transitions
+- [GameClient.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.luau) — GUI visibility
+- [Constants.luau](../src/ReplicatedStorage/Shared/Constants.luau) — GameMode values

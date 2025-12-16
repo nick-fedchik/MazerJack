@@ -1,113 +1,119 @@
-# UI Requirements
+﻿# UI Requirements
 
 > Game Version: 2.1.0  
-> Промпти для Roblox Studio Assistant
+> Source: Roblox Studio Assistant
 
 ---
 
+## Space Environment (Station Scene)
+- Show an orbiting **star (sun analog)** visible from the station exterior; warm light source, distinct from default Roblox sky.
+- Include a **planet (non-Earth)** in view near the station; unique color/atmosphere so it is clearly not Earth.
+- Add **stellar cloud/nebula backdrop** (starfield with a cloudy band) to avoid empty black space.
+- These visuals apply around the **Space Station** scene only; on **planetary locations** the surrounding sky/lighting can stay at the new-project defaults.
+
 ## JoinGameGui
 
-**Розміщення:** StarterGui/JoinGameGui
+**Location:** StarterGui/JoinGameGui
 
-**Промпт:**
+**Requirements:**
 ```
 Create a ScreenGui named "JoinGameGui" with:
 - Frame "MainFrame" centered, size 400x500 pixels, dark semi-transparent background
 - ImageLabel "AvatarImage" at top, 150x150, circular (UICorner)
 - TextLabel "NicknameLabel" below avatar, white text, bold, size 24
 - TextLabel "StatusLabel" below nickname, yellow text for new players, size 18
-- TextButton "JoinButton" at bottom, green background, white text "ПРИЄДНАТИСЯ", size 200x50
+- TextButton "JoinButton" at bottom, green background, white text "Join Game", size 200x50
 - All elements should have UICorner for rounded corners
 - Set Enabled = false (will be controlled by script)
 ```
 
-**Елементи та їх призначення:**
+**Expected hierarchy with types:**
 
-| Елемент | Тип | Опис |
+| Element | Type | Notes |
 |---------|-----|------|
-| `MainFrame` | Frame | Головний контейнер, центрований |
-| `AvatarImage` | ImageLabel | Аватар гравця (заповнюється скриптом) |
-| `NicknameLabel` | TextLabel | DisplayName гравця |
-| `StatusLabel` | TextLabel | "Новий дослідник" або "Досвідчений мандрівник" |
-| `JoinButton` | TextButton | Кнопка входу в гру → `JoinGame` RemoteEvent |
+| `MainFrame` | Frame | Main container with rounded corners |
+| `AvatarImage` | ImageLabel | Player headshot (can use avatar thumbnail) |
+| `NicknameLabel` | TextLabel | DisplayName |
+| `StatusLabel` | TextLabel | "New Player" or "Experienced Player" |
+| `JoinButton` | TextButton | Fires `JoinGame` RemoteEvent |
 
-**Логіка (GameClient.luau):**
-- Показується коли `CurrentMode == "Join"`
-- `AvatarImage` заповнюється через `rbxthumb://type=AvatarHeadShot&id={UserId}&w=150&h=150`
+**Runtime (GameClient.luau):**
+- Enabled when `CurrentMode == "Join"`
+- `AvatarImage` uses `rbxthumb://type=AvatarHeadShot&id={UserId}&w=150&h=150`
 - `NicknameLabel` = `player.DisplayName`
-- `StatusLabel` залежить від атрибута `IsNewPlayer`
+- `StatusLabel` toggles text based on `IsNewPlayer`
 
 ---
 
 ## StationGui
 
-**Розміщення:** StarterGui/StationGui
+**Location:** StarterGui/StationGui
 
-**Промпт:**
+**Requirements:**
 ```
 Create a ScreenGui named "StationGui" with:
 - Frame "TopBar" anchored to top, full width, height 60px, dark background
-- TextLabel "LocationLabel" in TopBar showing "Космічна Станція"
-- TextButton "ExitButton" in TopBar right corner, red background, text "ВИХІД", size 80x40
+- TextLabel "LocationLabel" in TopBar showing current area
+- TextButton "ExitButton" in TopBar right corner, red background, text "Exit", size 80x40
 - Frame "BottomPanel" anchored to bottom center, contains action buttons
-- TextButton "GoToLocationButton" in BottomPanel, blue background, text "НА ПЛАНЕТУ", size 200x50
+- TextButton "GoToLocationButton" in BottomPanel, blue background, text "Go to Location", size 200x50
 - All elements should have UICorner for rounded corners
 - Set Enabled = false (controlled by script)
 ```
 
-**Елементи та їх призначення:**
+**Expected hierarchy with types:**
 
-| Елемент | Тип | Опис |
+| Element | Type | Notes |
 |---------|-----|------|
-| `TopBar` | Frame | Верхня панель навігації |
-| `LocationLabel` | TextLabel | Назва поточної локації |
-| `ExitButton` | TextButton | Вихід з гри → `ExitGame` RemoteEvent |
-| `BottomPanel` | Frame | Нижня панель з діями |
-| `GoToLocationButton` | TextButton | Перехід на планету → `GoToLocation` RemoteEvent |
+| `TopBar` | Frame | Header container |
+| `LocationLabel` | TextLabel | Shows current station area |
+| `ExitButton` | TextButton | Fires `ExitGame` RemoteEvent |
+| `BottomPanel` | Frame | Container for action buttons |
+| `GoToLocationButton` | TextButton | Fires `GoToLocation` RemoteEvent |
 
-**Логіка (GameClient.luau):**
-- Показується коли `CurrentMode == "Station"`
-- Гравець фізично знаходиться на космічній станції
-- Кнопка "НА ПЛАНЕТУ" переводить в режим Location
+**Runtime (GameClient.luau):**
+- Enabled when `CurrentMode == "Station"`
+- Area name displayed from game state (Station)
+- "Go to Location" triggers `GoToLocation`
 
 ---
 
 ## LocationGui
 
-**Розміщення:** StarterGui/LocationGui
+**Location:** StarterGui/LocationGui
 
-**Промпт:**
+**Requirements:**
 ```
 Create a ScreenGui named "LocationGui" with:
 - Frame "TopBar" anchored to top, full width, height 60px, dark background
 - TextLabel "LocationName" in TopBar, white text, showing planet name
-- TextButton "ReturnButton" in TopBar right corner, orange background, text "НА СТАНЦІЮ", size 120x40
-- TextButton "ExitButton" next to ReturnButton, red background, text "ВИХІД", size 80x40
+- TextButton "ReturnButton" in TopBar right corner, orange background, text "Return", size 120x40
+- TextButton "ExitButton" next to ReturnButton, red background, text "Exit", size 80x40
 - All elements should have UICorner for rounded corners
 - Set Enabled = false (controlled by script)
 ```
 
-**Елементи та їх призначення:**
+**Expected hierarchy with types:**
 
-| Елемент | Тип | Опис |
+| Element | Type | Notes |
 |---------|-----|------|
-| `TopBar` | Frame | Верхня панель навігації |
-| `LocationName` | TextLabel | Назва планети/локації |
-| `ReturnButton` | TextButton | Повернення на станцію → `ReturnToStation` RemoteEvent |
-| `ExitButton` | TextButton | Вихід з гри → `ExitGame` RemoteEvent |
+| `TopBar` | Frame | Header container |
+| `LocationName` | TextLabel | Planet/location name |
+| `ReturnButton` | TextButton | Fires `ReturnToStation` RemoteEvent |
+| `ExitButton` | TextButton | Fires `ExitGame` RemoteEvent |
 
-**Логіка (GameClient.luau):**
-- Показується коли `CurrentMode == "Location"`
-- Гравець фізично знаходиться на планетній локації
-- Кнопка "НА СТАНЦІЮ" повертає в режим Station
+**Runtime (GameClient.luau):**
+- Enabled when `CurrentMode == "Location"`
+- Name shows active location
+- "Return" triggers `ReturnToStation`
 
 ---
 
 ## SpawnLocation
 
-**Розміщення:** Workspace/StellarStation/Modules/CommandModule/SpawnLocation
+**Location:** Workspace/StellarStation/Modules/CommandModule/SpawnLocation
 
-**Промпт:**
+**Requirements:**
 ```
 In Workspace, create folder hierarchy: StellarStation > Modules > CommandModule
 Inside CommandModule, add a SpawnLocation part named "SpawnLocation"
@@ -118,50 +124,47 @@ Inside CommandModule, add a SpawnLocation part named "SpawnLocation"
 - Make it invisible or styled to match station floor
 ```
 
-**Призначення:**
-- Точка спавну гравців після натискання "ПРИЄДНАТИСЯ"
-- Використовується в `GameServer.luau` функцією `findSpawnLocation()`
-- Шлях визначений в `Constants.Path.SpawnLocation`
+**Notes:**
+- Used as the spawn point for players when they click "Join Game"
+- Referenced by `GameServer.luau` via `findSpawnLocation()`
+- Path constant: `Constants.Path.SpawnLocation`
 
 ---
 
-## Загальні рекомендації
+## Visual / Styling Defaults
 
-### Стилізація
-- Темний напівпрозорий фон для Frame (`BackgroundColor3 = Color3.fromRGB(20, 20, 30)`, `BackgroundTransparency = 0.3`)
-- Білий текст для основних елементів
-- Зелений для позитивних дій (Join)
-- Помаранчевий для навігації (Return)
-- Червоний для виходу (Exit)
-- Синій для дослідження (GoToLocation)
+### Colors
+- Dark, cool-toned backgrounds for frames (`BackgroundColor3 = Color3.fromRGB(20, 20, 30)`, `BackgroundTransparency = 0.3`)
+- Accent colors by action: green (Join), blue (GoToLocation), orange (Return), red (Exit)
+- White/yellow text for contrast
 
 ### UICorner
-- Радіус 8-12 пікселів для кнопок
-- Радіус 50% для аватара (круглий)
+- Radius 8-12 pixels for frames/buttons
+- 50% radius for circular avatar image
 
 ### Enabled = false
-- Всі ScreenGui мають бути `Enabled = false` за замовчуванням
-- Видимість контролюється через `GameClient.luau`
+- Each ScreenGui starts with `Enabled = false` to allow script control
+- Scripts (GameClient.luau) toggle visibility based on `CurrentMode`
 
 ---
 
-## Зв'язок з кодом
+## GUI to RemoteEvent Mapping
 
-| GUI | RemoteEvent | Режим гри |
+| GUI | RemoteEvent | Flow |
 |-----|-------------|-----------|
-| JoinGameGui | — | `Join` (показується) |
-| JoinGameGui.JoinButton | `JoinGame` | `Join` → `Station` |
-| StationGui | — | `Station` (показується) |
-| StationGui.GoToLocationButton | `GoToLocation` | `Station` → `Location` |
-| StationGui.ExitButton | `ExitGame` | `Station` → `Join` |
-| LocationGui | — | `Location` (показується) |
-| LocationGui.ReturnButton | `ReturnToStation` | `Location` → `Station` |
-| LocationGui.ExitButton | `ExitGame` | `Location` → `Join` |
+| JoinGameGui | — | `Join` state visible |
+| JoinGameGui.JoinButton | `JoinGame` | `Join` -> `Station` |
+| StationGui | — | `Station` state visible |
+| StationGui.GoToLocationButton | `GoToLocation` | `Station` -> `Location` |
+| StationGui.ExitButton | `ExitGame` | `Station` -> `Join` |
+| LocationGui | — | `Location` state visible |
+| LocationGui.ReturnButton | `ReturnToStation` | `Location` -> `Station` |
+| LocationGui.ExitButton | `ExitGame` | `Location` -> `Join` |
 
 ---
 
-## Файли коду
+## References
 
-- **Клієнт:** [GameClient.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.luau)
-- **Сервер:** [GameServer.luau](../src/ServerScriptService/GameServer.luau)
-- **Константи:** [Constants.luau](../src/ReplicatedStorage/Shared/Constants.luau)
+- **Client:** [GameClient.luau](../src/StarterPlayer/StarterPlayerScripts/GameClient.client.luau)
+- **Server:** [GameServer.luau](../src/ServerScriptService/GameServer.server.luau)
+- **Constants:** [Constants.luau](../src/ReplicatedStorage/Shared/Constants.luau)
